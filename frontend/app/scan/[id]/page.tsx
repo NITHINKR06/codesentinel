@@ -67,6 +67,16 @@ export default function ScanPage() {
     }
   }, [scanId, router])
 
+  const handleStopScan = async () => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+      await fetch(`${API_URL}/scan/${scanId}/cancel`, { method: 'POST' })
+    } catch (e) {
+      console.error("Failed to stop scan", e)
+    }
+    router.push("/dashboard")
+  }
+
   return (
     <main className="min-h-screen bg-gray-950 flex flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-2xl">
@@ -78,7 +88,7 @@ export default function ScanPage() {
           <span className="text-gray-400 text-sm font-mono flex-1">{scanId.slice(0, 8)}...</span>
           {!done && currentStage !== "failed" && (
             <button
-              onClick={() => router.push("/dashboard")}
+              onClick={handleStopScan}
               className="px-3 py-1.5 bg-red-900/10 hover:bg-red-900/30 text-red-400 border border-red-900/50 rounded-lg text-sm font-medium transition-colors"
             >
               Stop Scan
