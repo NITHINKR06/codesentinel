@@ -1,4 +1,1 @@
-```python
-cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-# Use parameterized query to prevent SQL injection
-```
+cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))  # Use parameterized query to prevent SQL injection
