@@ -58,7 +58,13 @@ export default function ScanPage() {
       },
       () => setCurrentStage("failed")
     )
-    return () => ws.close()
+    return () => {
+      if (ws.readyState === 1) {
+        ws.close()
+      } else {
+        ws.addEventListener('open', () => ws.close())
+      }
+    }
   }, [scanId, router])
 
   return (
