@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, text
 from pydantic import BaseModel
 from typing import Optional
 import uuid
 
 from db.database import get_db
 from models.scan import Scan, ScanStatus, ScanType
-from workers.scan_worker import run_scan_task
 
 router = APIRouter()
 
@@ -31,22 +30,28 @@ async def create_scan(request: ScanRequest, db: AsyncSession = Depends(get_db)):
     scan_type = ScanType.GITHUB if request.github_url else ScanType.URL
 
     scan = Scan(
-        scan_type=scan_type,
+        id=uuid.uuid4(),
+        scan_type=scan_type.value,
         github_url=request.github_url,
         live_url=request.live_url,
-        status=ScanStatus.PENDING,
+        status=ScanStatus.PENDING.value,
     )
     db.add(scan)
     await db.commit()
     await db.refresh(scan)
 
-    # Dispatch background task
-    run_scan_task.delay(str(scan.id))
+    # Dispatch background Celery task
+    try:
+        from workers.scan_worker import run_scan_task
+        run_scan_task.delay(str(scan.id))
+    except Exception as e:
+        # Celery not running — scan will stay pending
+        print(f"Warning: Could not dispatch task: {e}")
 
     return ScanResponse(
         scan_id=str(scan.id),
         status=scan.status,
-        message="Scan started. Connect to /ws/scan/{scan_id} for live updates.",
+        message="Scan queued. Connect to /ws/scan/{scan_id} for live updates.",
     )
 
 
@@ -54,26 +59,30 @@ async def create_scan(request: ScanRequest, db: AsyncSession = Depends(get_db)):
 async def create_scan_from_zip(
     file: UploadFile = File(...), db: AsyncSession = Depends(get_db)
 ):
-    if not file.filename.endswith(".zip"):
+    if not file.filename or not file.filename.endswith(".zip"):
         raise HTTPException(400, "Only .zip files supported")
 
     content = await file.read()
-    import tempfile, os
-
+    import tempfile
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
     tmp.write(content)
     tmp.close()
 
     scan = Scan(
-        scan_type=ScanType.ZIP,
-        status=ScanStatus.PENDING,
+        id=uuid.uuid4(),
+        scan_type=ScanType.ZIP.value,
+        status=ScanStatus.PENDING.value,
         repo_name=file.filename,
     )
     db.add(scan)
     await db.commit()
     await db.refresh(scan)
 
-    run_scan_task.delay(str(scan.id), zip_path=tmp.name)
+    try:
+        from workers.scan_worker import run_scan_task
+        run_scan_task.delay(str(scan.id), zip_path=tmp.name)
+    except Exception as e:
+        print(f"Warning: Could not dispatch task: {e}")
 
     return ScanResponse(
         scan_id=str(scan.id),
@@ -82,9 +91,32 @@ async def create_scan_from_zip(
     )
 
 
+@router.get("")
+async def list_scans(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Scan).order_by(Scan.created_at.desc()).limit(20)
+    )
+    scans = result.scalars().all()
+    return [
+        {
+            "scan_id": str(s.id),
+            "status": s.status,
+            "repo_name": s.repo_name,
+            "github_url": s.github_url,
+            "score_before": s.score_before,
+            "score_after": s.score_after,
+            "total_findings": s.total_findings,
+            "created_at": s.created_at.isoformat() if s.created_at else None,
+        }
+        for s in scans
+    ]
+
+
 @router.get("/{scan_id}")
 async def get_scan(scan_id: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Scan).where(Scan.id == uuid.UUID(scan_id)))
+    result = await db.execute(
+        select(Scan).where(Scan.id == scan_id)
+    )
     scan = result.scalar_one_or_none()
     if not scan:
         raise HTTPException(404, "Scan not found")
@@ -106,24 +138,3 @@ async def get_scan(scan_id: str, db: AsyncSession = Depends(get_db)):
         "completed_at": scan.completed_at.isoformat() if scan.completed_at else None,
         "pr_url": scan.pr_url,
     }
-
-
-@router.get("/")
-async def list_scans(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
-        select(Scan).order_by(Scan.created_at.desc()).limit(20)
-    )
-    scans = result.scalars().all()
-    return [
-        {
-            "scan_id": str(s.id),
-            "status": s.status,
-            "repo_name": s.repo_name,
-            "github_url": s.github_url,
-            "score_before": s.score_before,
-            "score_after": s.score_after,
-            "total_findings": s.total_findings,
-            "created_at": s.created_at.isoformat() if s.created_at else None,
-        }
-        for s in scans
-    ]

@@ -22,7 +22,10 @@ async def websocket_scan(websocket: WebSocket, scan_id: str):
                 data = message["data"]
                 if isinstance(data, bytes):
                     data = data.decode()
-                await websocket.send_text(data)
+                try:
+                    await websocket.send_text(data)
+                except (WebSocketDisconnect, ConnectionResetError, RuntimeError):
+                    break
 
                 # Stop when scan completes or fails
                 try:
@@ -31,10 +34,13 @@ async def websocket_scan(websocket: WebSocket, scan_id: str):
                         break
                 except Exception:
                     pass
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, ConnectionResetError, asyncio.CancelledError):
         pass
     finally:
-        await pubsub.unsubscribe(channel)
+        try:
+            await pubsub.unsubscribe(channel)
+        except Exception:
+            pass
         await r.aclose()
 
 
