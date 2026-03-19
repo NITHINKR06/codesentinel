@@ -1,0 +1,43 @@
+name: "CodeSentinel Security Scan"
+description: "Automatically scan your codebase for vulnerabilities on every push"
+author: "CodeSentinel"
+
+branding:
+  icon: "shield"
+  color: "red"
+
+inputs:
+  api_url:
+    description: "CodeSentinel API URL"
+    required: true
+  github_url:
+    description: "GitHub repository URL to scan"
+    required: false
+  fail_on_critical:
+    description: "Fail the workflow if critical vulnerabilities are found"
+    required: false
+    default: "true"
+  fail_threshold:
+    description: "Minimum security score to pass (0-100)"
+    required: false
+    default: "50"
+
+outputs:
+  score_before:
+    description: "Security score before patches"
+  score_after:
+    description: "Security score after patches"
+  critical_count:
+    description: "Number of critical findings"
+  report_url:
+    description: "URL to the full report"
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  env:
+    API_URL: ${{ inputs.api_url }}
+    REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+    FAIL_ON_CRITICAL: ${{ inputs.fail_on_critical }}
+    FAIL_THRESHOLD: ${{ inputs.fail_threshold }}
+    GITHUB_TOKEN: ${{ github.token }}
