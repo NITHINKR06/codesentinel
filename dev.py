@@ -30,13 +30,19 @@ def main():
 
     try:
         # Keep the main thread alive while background processes run
-        while True:
+        while len(processes) > 0:
             time.sleep(1)
             
-            # Optional: check if anything crashed unexpectedly
-            for name, p in processes:
+            # check if anything crashed unexpectedly
+            for name, p in processes[:]:
                 if p.poll() is not None:
                     print(f"[{name}] exited unexpectedly with code {p.returncode}")
+                    processes.remove((name, p))
+                    print(f"Shutting down all remaining services because {name} failed...")
+                    for oname, op in processes:
+                        print(f"Stopping {oname}...")
+                        op.terminate()
+                    sys.exit(1)
                     
     except KeyboardInterrupt:
         print("\n\nShutting down all services...")
