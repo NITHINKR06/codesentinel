@@ -18,9 +18,10 @@ CodeSentinel is a full-stack security analysis platform that scans your GitHub r
 
 ### Prerequisites
 - Docker & Docker Compose
-- [Ollama](https://ollama.ai) running locally
+- Groq API Key (for fast, cloud LLM features) **OR** [Ollama](https://ollama.ai) running locally (if you have a good machine for local inference)
 
-### 1. Pull the LLM model
+### 1. (Optional) Pull the LLM model
+If you prefer to run the model locally instead of using Groq, pull the Ollama model:
 ```bash
 ollama pull codellama:13b
 ```
@@ -30,7 +31,7 @@ ollama pull codellama:13b
 git clone https://github.com/your-org/codesentinel
 cd codesentinel
 cp .env.example .env
-# Edit .env and add your GITHUB_TOKEN
+# Edit .env and add your GITHUB_TOKEN and GROQ_API_KEY (or use Ollama)
 ```
 
 ### 3. Run
@@ -123,7 +124,7 @@ Input (GitHub URL / ZIP / Live URL)
 
 ## Stack
 
-**Backend:** FastAPI · Python 3.11 · Tree-sitter · NetworkX · LangChain · Ollama · Celery · Redis · PostgreSQL  
+**Backend:** FastAPI · Python 3.11 · Tree-sitter · NetworkX · LangChain · Groq · Celery · Redis · SQLite  
 **Frontend:** Next.js 14 · TypeScript · D3.js · TailwindCSS · Recharts  
 **Infra:** Docker Compose · GitHub API · GitHub Actions
 
