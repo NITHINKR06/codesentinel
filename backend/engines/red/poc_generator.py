@@ -1,5 +1,6 @@
-from langchain_ollama import OllamaLLM
-from langchain.prompts import PromptTemplate
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from typing import Dict, Optional
 import structlog
 from config import settings
@@ -55,15 +56,15 @@ Then on the next line explain in one sentence why.
 
 class PoCGenerator:
     def __init__(self):
-        self.llm = OllamaLLM(
-            base_url=settings.OLLAMA_BASE_URL,
-            model=settings.OLLAMA_MODEL,
+        self.llm = ChatGroq(
+            model=settings.GROQ_MODEL,
+            api_key=settings.GROQ_API_KEY,
             temperature=0.2,
         )
 
     def generate_poc(self, finding: Dict) -> Optional[str]:
         try:
-            chain = POC_PROMPT | self.llm
+            chain = POC_PROMPT | self.llm | StrOutputParser()
             result = chain.invoke({
                 "vuln_type": finding.get("vuln_type", "unknown"),
                 "vulnerable_code": finding.get("vulnerable_code", ""),
@@ -78,7 +79,7 @@ class PoCGenerator:
 
     def validate_patch(self, finding: Dict, patched_code: str, poc_exploit: str) -> Dict:
         try:
-            chain = FIX_VALIDATION_PROMPT | self.llm
+            chain = FIX_VALIDATION_PROMPT | self.llm | StrOutputParser()
             result = chain.invoke({
                 "vuln_type": finding.get("vuln_type", ""),
                 "patched_code": patched_code,

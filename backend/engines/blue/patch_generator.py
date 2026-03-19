@@ -1,5 +1,6 @@
-from langchain_ollama import OllamaLLM
-from langchain.prompts import PromptTemplate
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from typing import Dict, Optional, List
 import structlog
 from config import settings
@@ -77,24 +78,22 @@ EXT_TO_LANG = {
 
 class PatchGenerator:
     def __init__(self):
-        self.llm = OllamaLLM(
-            base_url=settings.OLLAMA_BASE_URL,
-            model=settings.OLLAMA_MODEL,
+        self.llm = ChatGroq(
+            model=settings.GROQ_MODEL,
+            api_key=settings.GROQ_API_KEY,
             temperature=0.1,
         )
 
     def generate_patch(self, finding: Dict, file_content: str) -> Optional[str]:
         vuln_line = finding.get("line_number", 1)
         lines = file_content.split("\n")
-
-        # Get surrounding context (10 lines before and after)
         start = max(0, vuln_line - 11)
         end = min(len(lines), vuln_line + 10)
         surrounding = "\n".join(lines[start:end])
         vulnerable_code = finding.get("vulnerable_code", lines[vuln_line - 1] if vuln_line <= len(lines) else "")
 
         try:
-            chain = PATCH_PROMPT | self.llm
+            chain = PATCH_PROMPT | self.llm | StrOutputParser()
             result = chain.invoke({
                 "vuln_type": finding.get("vuln_type", ""),
                 "file_path": finding.get("file_path", ""),
