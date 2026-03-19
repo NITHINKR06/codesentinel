@@ -75,7 +75,15 @@ export default function ScanPage() {
           <Shield className="w-7 h-7 text-red-400" />
           <h1 className="text-xl font-semibold text-white">CodeSentinel</h1>
           <ChevronRight className="w-4 h-4 text-gray-600" />
-          <span className="text-gray-400 text-sm font-mono">{scanId.slice(0, 8)}...</span>
+          <span className="text-gray-400 text-sm font-mono flex-1">{scanId.slice(0, 8)}...</span>
+          {!done && currentStage !== "failed" && (
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="px-3 py-1.5 bg-red-900/10 hover:bg-red-900/30 text-red-400 border border-red-900/50 rounded-lg text-sm font-medium transition-colors"
+            >
+              Stop Scan
+            </button>
+          )}
         </div>
 
         {/* Progress bar */}

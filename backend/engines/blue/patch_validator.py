@@ -56,6 +56,7 @@ class PatchValidator:
         }
 
     def validate_all(self, findings: List[Dict], patches: List[Dict]) -> List[Dict]:
+        import time
         finding_map = {f.get("id", f.get("file_path", "") + str(f.get("line_number", ""))): f for f in findings}
         validated = []
         for patch in patches:
@@ -65,4 +66,5 @@ class PatchValidator:
                 validated.append({**patch, "validated": False, "validation_notes": "Finding not found"})
                 continue
             validated.append(self.validate(finding, patch))
+            time.sleep(3) # Throttle to respect API rate limits
         return validated
