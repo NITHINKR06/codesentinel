@@ -160,11 +160,12 @@ class PatchGenerator:
         }
 
     def patch_all_findings(self, findings: List[Dict], files: List[Dict]) -> List[Dict]:
+        import time
         file_map = {f["path"]: f["content"] for f in files}
         patches = []
-        for finding in findings:
-            if finding.get("severity") not in ("critical", "high"):
-                continue
+        # Cap the number of patches to prevent massive rate limiting on large repos
+        critical_high = [f for f in findings if f.get("severity") in ("critical", "high")]
+        for finding in critical_high[:15]: # process max 15 to stay within strict limits
             file_content = file_map.get(finding.get("file_path", ""), "")
             if not file_content:
                 continue
@@ -179,4 +180,5 @@ class PatchGenerator:
                     "validated": False,
                     "validation_attempts": 0,
                 })
+            time.sleep(3) # Throttle to respect Groq API rate limits
         return patches

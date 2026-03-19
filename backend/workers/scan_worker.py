@@ -139,12 +139,14 @@ def run_scan_task(self, scan_id: str, zip_path: str = None):
 
             try:
                 from engines.red.poc_generator import PoCGenerator
+                import time
                 poc_gen = PoCGenerator()
                 critical_findings = [f for f in findings if f.get("severity") in ("critical", "high")]
                 for finding in critical_findings[:5]:  # cap at 5 to save API calls
                     poc = poc_gen.generate_poc(finding)
                     if poc:
                         finding["poc_exploit"] = poc
+                    time.sleep(3) # Throttle to respect Groq API rate limits
                 emit(scan_id, "generating", "PoC exploits generated", progress=68)
             except Exception as e:
                 log.warning("PoC generation failed", error=str(e))

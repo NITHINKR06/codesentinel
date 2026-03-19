@@ -24,7 +24,7 @@ class Settings(BaseSettings):
 
     # Groq LLM (free at console.groq.com)
     GROQ_API_KEY: Optional[str] = None
-    GROQ_MODEL: str = "llama3-8b-8192"
+    GROQ_MODEL: str = "llama-3.1-8b-instant"
 
     # GitHub
     GITHUB_TOKEN: Optional[str] = None
