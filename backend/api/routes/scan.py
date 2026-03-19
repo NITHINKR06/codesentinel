@@ -1,5 +1,5 @@
 ```python
-@router.post("/auth/{scan_id}/cancel")
+@router.post("/auth/{scan_id}/cancel", dependencies=[Depends(get_current_active_user)])
 async def cancel_scan(scan_id: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Scan).where(Scan.id == scan_id)
