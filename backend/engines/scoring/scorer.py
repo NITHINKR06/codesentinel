@@ -25,7 +25,7 @@ def calculate_score(
         deduction = SEVERITY_DEDUCTIONS.get(f.get("severity", "low"), 2)
         # Scale down for larger codebases (more files = proportionally less per finding)
         scale = max(0.5, 1.0 - (total_files / 500) * 0.3)
-        score -= deduction * scale
+        score -= min(deduction * scale, 3)
 
     # Deduct per chain (chains are worse than individual findings)
     for chain in chains:
