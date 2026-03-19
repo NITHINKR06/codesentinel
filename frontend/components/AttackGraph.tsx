@@ -63,7 +63,7 @@ export default function AttackGraph({ data }: Props) {
       .join("g")
       .attr("cursor", "pointer")
       .call(
-        d3.drag<SVGGElement, GraphNode>()
+        d3.drag<any, GraphNode>()
           .on("start", (event, d) => {
             if (!event.active) simulation.alphaTarget(0.3).restart()
             ;(d as d3.SimulationNodeDatum).fx = event.x
@@ -121,7 +121,7 @@ export default function AttackGraph({ data }: Props) {
         .attr("x2", (d: d3.SimulationLinkDatum<d3.SimulationNodeDatum>) => ((d.target as d3.SimulationNodeDatum).x || 0))
         .attr("y2", (d: d3.SimulationLinkDatum<d3.SimulationNodeDatum>) => ((d.target as d3.SimulationNodeDatum).y || 0))
 
-      node.attr("transform", (d: d3.SimulationNodeDatum) => `translate(${d.x || 0},${d.y || 0})`)
+      node.attr("transform", (d: any) => `translate(${d.x || 0},${d.y || 0})`)
     })
 
     return () => { simulation.stop() }
