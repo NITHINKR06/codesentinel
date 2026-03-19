@@ -112,6 +112,51 @@ async def list_scans(db: AsyncSession = Depends(get_db)):
     ]
 
 
+@router.post("/{scan_id}/cancel")
+async def cancel_scan(scan_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Scan).where(Scan.id == scan_id)
+    )
+    scan = result.scalar_one_or_none()
+    if not scan:
+        raise HTTPException(404, "Scan not found")
+
+    try:
+        from workers.celery_app import celery_app
+        i = celery_app.control.inspect()
+        active_tasks = i.active()
+        if active_tasks:
+            for worker, tasks in active_tasks.items():
+                for task in tasks:
+                    if task["name"] == "workers.scan_worker.run_scan_task" and scan_id in task["args"]:
+                        celery_app.control.revoke(task["id"], terminate=True, signal="SIGKILL")
+                        break
+        
+        # Also clean up the database state just in case it was terminated abruptly
+        scan.status = ScanStatus.FAILED.value
+        await db.commit()
+        
+        # Output a message to the websocket
+        import redis
+        import json
+        r = redis.from_url("redis://localhost:6379/0")
+        event = {
+            "scan_id": scan_id,
+            "stage": "failed",
+            "message": "Scan cancelled by user",
+            "progress": 0,
+            "data": {},
+        }
+        r.publish(f"scan:{scan_id}:events", json.dumps(event))
+        r.close()
+
+    except Exception as e:
+        print(f"Failed to cancel scan: {e}")
+        raise HTTPException(500, "Failed to cancel scan")
+
+    return {"message": "Scan cancelled successfully"}
+
+
 @router.get("/{scan_id}")
 async def get_scan(scan_id: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
