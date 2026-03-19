@@ -1,5 +1,7 @@
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from celery import Celery
-import os
 
 # Ensure worker runs from the backend directory
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
