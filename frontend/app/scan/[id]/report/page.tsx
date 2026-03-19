@@ -8,7 +8,8 @@ import FindingCard from "@/components/FindingCard"
 import AttackGraph from "@/components/AttackGraph"
 import ThreatActorCard from "@/components/ThreatActorCard"
 import PatchViewer from "@/components/PatchViewer"
-import { Shield, GitPullRequest, AlertTriangle, Bug, History } from "lucide-react"
+import Link from "next/link"
+import { Shield, GitPullRequest, AlertTriangle, Bug, History, Plus, LayoutDashboard } from "lucide-react"
 
 export default function ReportPage() {
   const params = useParams()
@@ -54,13 +55,28 @@ export default function ReportPage() {
     <main className="min-h-screen bg-gray-950 text-white">
       {/* Top bar */}
       <header className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Shield className="w-6 h-6 text-red-400" />
-          <span className="font-semibold">CodeSentinel</span>
-          <span className="text-gray-600">/</span>
-          <span className="text-gray-400 text-sm">{report.repo_name || report.github_url}</span>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <Shield className="w-6 h-6 text-red-400" />
+            <Link href="/" className="font-semibold hover:text-red-400 transition-colors">CodeSentinel</Link>
+            <span className="text-gray-600">/</span>
+            <span className="text-gray-400 text-sm">{report.repo_name || report.github_url}</span>
+          </div>
+          
+          <div className="w-px h-6 bg-gray-800 mx-2"></div>
+          
+          <nav className="flex items-center gap-4 text-sm text-gray-400">
+            <Link href="/" className="flex items-center gap-1.5 hover:text-white transition-colors border border-transparent hover:border-gray-800 px-2.5 py-1.5 rounded-lg">
+              <Plus className="w-4 h-4" /> New Scan
+            </Link>
+            <Link href="/dashboard" className="flex items-center gap-1.5 hover:text-white transition-colors border border-transparent hover:border-gray-800 px-2.5 py-1.5 rounded-lg">
+              <LayoutDashboard className="w-4 h-4" /> Dashboard
+            </Link>
+          </nav>
         </div>
-        {report.pr_url || prUrl ? (
+        
+        <div className="flex items-center gap-3">
+          {report.pr_url || prUrl ? (
           <a href={report.pr_url || prUrl} target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-2 text-sm text-green-400 border border-green-800 px-3 py-1.5 rounded-lg hover:bg-green-900/20">
             <GitPullRequest className="w-4 h-4" /> View PR
@@ -81,6 +97,7 @@ export default function ReportPage() {
             </button>
           </div>
         ) : null}
+        </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-8">

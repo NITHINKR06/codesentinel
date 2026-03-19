@@ -1,0 +1,57 @@
+import subprocess
+import time
+import sys
+
+def main():
+    commands = [
+        {
+            "name": "Celery",
+            "cmd": "cd backend && source /home/nithin/Documents/codesentinel/backend/venv/bin/activate.fish && celery -A workers.celery_app worker --loglevel=info --concurrency=1"
+        },
+        {
+            "name": "Backend",
+            "cmd": "cd backend && python3 -m venv venv && source /home/nithin/Documents/codesentinel/backend/venv/bin/activate.fish && uvicorn main:app --reload"
+        },
+        {
+            "name": "Frontend",
+            "cmd": "cd frontend && yarn dev"
+        }
+    ]
+
+    processes = []
+    
+    for c in commands:
+        print(f"Starting {c['name']}...")
+        # Spawning processes using fish as requested
+        p = subprocess.Popen(['fish', '-c', c['cmd']])
+        processes.append((c['name'], p))
+
+    print("\nAll services started! Press Ctrl+C to stop.\n")
+
+    try:
+        # Keep the main thread alive while background processes run
+        while True:
+            time.sleep(1)
+            
+            # Optional: check if anything crashed unexpectedly
+            for name, p in processes:
+                if p.poll() is not None:
+                    print(f"[{name}] exited unexpectedly with code {p.returncode}")
+                    
+    except KeyboardInterrupt:
+        print("\n\nShutting down all services...")
+        
+        # Terminate all gracefully
+        for name, p in processes:
+            print(f"Stopping {name}...")
+            p.terminate()
+            
+        # Wait for all to finish
+        for name, p in processes:
+            p.wait()
+            
+        print("All services stopped.")
+        sys.exit(0)
+
+if __name__ == "__main__":
+    main()
