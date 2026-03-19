@@ -1,52 +1,38 @@
-fastapi==0.111.0
-uvicorn[standard]==0.30.1
-websockets==12.0
-python-multipart==0.0.9
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.1
+websockets>=12.0
+python-multipart>=0.0.9
 
-# Database
-sqlalchemy==2.0.30
-alembic==1.13.1
-asyncpg==0.29.0
-psycopg2-binary==2.9.9
+# Database — SQLite, zero setup, no postgres needed
+sqlalchemy>=2.0.30
+aiosqlite>=0.20.0
+alembic>=1.13.1
+asyncpg>=0.29.0
 
 # Task queue
-celery==5.4.0
-redis==5.0.4
+celery>=5.4.0
+redis>=5.0.4
 
 # Code analysis
-tree-sitter==0.22.3
-tree-sitter-python==0.21.0
-tree-sitter-javascript==0.21.3
-tree-sitter-php==0.22.2
-networkx==3.3
+networkx>=3.3
 
 # Git
-gitpython==3.1.43
+gitpython>=3.1.43
 
-# LLM
-langchain==0.2.3
-langchain-community==0.2.4
-langchain-ollama==0.1.1
-ollama==0.2.1
+# LLM — Groq free API, no local GPU
+langchain>=0.2.3
+langchain-community>=0.2.4
+langchain-groq>=0.1.5
 
-# Docker
-docker==7.1.0
-
-# GitHub
-PyGithub==2.3.0
+# GitHub PR creation
+PyGithub>=2.3.0
 
 # HTTP
-httpx==0.27.0
-requests==2.32.3
-beautifulsoup4==4.12.3
-
-# Security analysis
-bandit==1.7.9
-semgrep==1.75.0
+httpx>=0.27.0
+requests>=2.32.3
 
 # Utilities
-pydantic==2.7.3
-pydantic-settings==2.3.1
-python-dotenv==1.0.1
-structlog==24.2.0
-tenacity==8.3.0
+pydantic>=2.7.3
+pydantic-settings>=2.3.1
+python-dotenv>=1.0.1
+structlog>=24.2.0
