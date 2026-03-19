@@ -11,6 +11,6 @@ for node_id, data in G.nodes(data=True):
         "hasVuln": data.get("has_vuln", False),
         "severity": _sev_label(data.get("max_severity", 0)),
         "inChain": node_id in chain_nodes,
-        "vulns": data.get("vulns", []),
+        "vulns": data.get("vulns", [])
     })
 ```
