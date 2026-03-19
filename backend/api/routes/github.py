@@ -1,7 +1,3 @@
-<<<<<<< codesentinel/security-fixes
-```python
-@router.post("/pr", dependencies=[Depends(auth_required)])
-=======
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -23,7 +19,6 @@ class PRRequest(BaseModel):
 
 
 @router.post("/pr")
->>>>>>> main
 async def create_pull_request(request: PRRequest, db: AsyncSession = Depends(get_db)):
     # Token comes from server env — never from the client
     if not settings.GITHUB_TOKEN:
@@ -38,10 +33,6 @@ async def create_pull_request(request: PRRequest, db: AsyncSession = Depends(get
     if isinstance(patches_data, str):
         patches_data = json.loads(patches_data)
 
-<<<<<<< codesentinel/security-fixes
-    from github import Github
-```
-=======
     if not patches_data:
         raise HTTPException(400, "No patches available for this scan")
 
@@ -140,4 +131,3 @@ async def create_pull_request(request: PRRequest, db: AsyncSession = Depends(get
 
     except Exception as e:
         raise HTTPException(500, f"Failed to create PR: {str(e)}")
->>>>>>> main
