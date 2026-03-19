@@ -1,10 +1,16 @@
 from celery import Celery
-from config import settings
+import os
+
+# Ensure worker runs from the backend directory
+BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(BACKEND_DIR)
+
+REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 
 celery_app = Celery(
     "codesentinel",
-    broker=settings.REDIS_URL,
-    backend=settings.REDIS_URL,
+    broker=REDIS_URL,
+    backend=REDIS_URL,
     include=["workers.scan_worker"],
 )
 
