@@ -250,6 +250,27 @@ def run_scan_task(self, scan_id: str, zip_path: str = None):
             except Exception as e:
                 log.warning("Threat profiling failed", error=str(e))
 
+            # ── Phase 8b: Attack Narrative ─────────────────────────
+            emit(scan_id, "narrative", "Generating attack narrative...", progress=90)
+            narrative = ""
+            try:
+                from engines.red.attack_narrative import AttackNarrativeGenerator
+                gen = AttackNarrativeGenerator()
+                narrative = gen.generate(
+                    repo_name=scan.repo_name or scan.github_url or "target",
+                    findings=findings,
+                    ghost_commits=ghost_commits,
+                    recon_data=recon_data,
+                    threat_actor=threat_actor,
+                    chains=chains,
+                )
+                emit(scan_id, "narrative", "Attack narrative ready", progress=92)
+                # Store narrative in graph_data
+                graph_data["narrative"] = narrative
+            except Exception as e:
+                log.warning("Narrative generation failed", error=str(e))
+                emit(scan_id, "narrative", "Narrative skipped", progress=92)
+
             # ── Phase 9: Scoring ───────────────────────────────────
             update_scan(session, status=ScanStatus.SCORING.value)
             from engines.scoring.scorer import calculate_score, calculate_score_after_patches
