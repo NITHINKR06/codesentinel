@@ -3,6 +3,9 @@ import time
 import sys
 
 def main():
+    print("Starting background services (Redis, DB)...")
+    subprocess.run(["docker", "compose", "up", "-d", "redis", "db"], check=True)
+
     commands = [
         {
             "name": "Celery",
