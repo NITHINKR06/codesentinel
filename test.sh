@@ -1,0 +1,1 @@
+curl -X POST http://127.0.0.1:8000/api/github/pr -H 'Content-Type: application/json' -d '{"scan_id": "9378c288-e74d-4075-b086-fd420a719b1d", "repo_url": "https://github.com/NITHINKR06/codesentinel", "branch_name": "codesentinel/security-fixes"}'
