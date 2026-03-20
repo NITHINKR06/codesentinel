@@ -11,70 +11,52 @@ SEVERITY_RANK = {"critical": 4, "high": 3, "medium": 2, "low": 1}
 def _extract_functions(content: str, file_path: str) -> List[Dict]:
     functions = []
     ext = file_path.split(".")[-1].lower()
+    lines = content.split("\n")
 
     if ext == "py":
-        # Regular functions
         for m in re.finditer(r'^(?:async\s+)?def\s+(\w+)\s*\(', content, re.MULTILINE):
-            functions.append({
-                "name": m.group(1),
-                "file": file_path,
-                "line": content[:m.start()].count("\n") + 1,
-                "type": "function",
-            })
-        # Class methods
+            functions.append({"name": m.group(1), "file": file_path,
+                              "line": content[:m.start()].count("\n") + 1, "type": "function"})
         for m in re.finditer(r'^\s+(?:async\s+)?def\s+(\w+)\s*\(self', content, re.MULTILINE):
-            functions.append({
-                "name": m.group(1),
-                "file": file_path,
-                "line": content[:m.start()].count("\n") + 1,
-                "type": "method",
-            })
-        # FastAPI/Flask route handlers
+            functions.append({"name": m.group(1), "file": file_path,
+                              "line": content[:m.start()].count("\n") + 1, "type": "method"})
         for m in re.finditer(r'@(?:app|router)\.\w+\([^)]*\)\s*\n\s*(?:async\s+)?def\s+(\w+)', content):
-            functions.append({
-                "name": m.group(1),
-                "file": file_path,
-                "line": content[:m.start()].count("\n") + 1,
-                "type": "route",
-            })
+            functions.append({"name": m.group(1), "file": file_path,
+                              "line": content[:m.start()].count("\n") + 1, "type": "route"})
 
     elif ext in ("js", "ts", "jsx", "tsx"):
-        # Named functions
         for m in re.finditer(r'(?:async\s+)?function\s+(\w+)\s*\(', content):
-            functions.append({
-                "name": m.group(1),
-                "file": file_path,
-                "line": content[:m.start()].count("\n") + 1,
-                "type": "function",
-            })
-        # Arrow functions / const
+            functions.append({"name": m.group(1), "file": file_path,
+                              "line": content[:m.start()].count("\n") + 1, "type": "function"})
         for m in re.finditer(r'(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s*)?\(', content):
-            functions.append({
-                "name": m.group(1),
-                "file": file_path,
-                "line": content[:m.start()].count("\n") + 1,
-                "type": "arrow",
-            })
-        # Express route handlers
+            functions.append({"name": m.group(1), "file": file_path,
+                              "line": content[:m.start()].count("\n") + 1, "type": "arrow"})
         for m in re.finditer(r'(?:app|router)\.\w+\s*\([^,)]+,\s*(?:async\s*)?\(?\s*(\w+)', content):
-            functions.append({
-                "name": m.group(1),
-                "file": file_path,
-                "line": content[:m.start()].count("\n") + 1,
-                "type": "route",
-            })
-        # Class methods
+            functions.append({"name": m.group(1), "file": file_path,
+                              "line": content[:m.start()].count("\n") + 1, "type": "route"})
         for m in re.finditer(r'(?:async\s+)?(\w+)\s*\([^)]*\)\s*\{', content):
             name = m.group(1)
-            if name not in ("if", "for", "while", "switch", "catch", "function"):
-                functions.append({
-                    "name": name,
-                    "file": file_path,
-                    "line": content[:m.start()].count("\n") + 1,
-                    "type": "method",
-                })
+            if name not in ("if","for","while","switch","catch","function","class"):
+                functions.append({"name": name, "file": file_path,
+                                  "line": content[:m.start()].count("\n") + 1, "type": "method"})
 
-    return functions
+    # Deduplicate by name+line
+    seen = set()
+    unique = []
+    for f in functions:
+        key = (f["name"], f["line"])
+        if key not in seen:
+            seen.add(key)
+            unique.append(f)
+
+    return unique
+
+
+def _get_function_end_line(functions: List[Dict], fn_index: int, total_lines: int) -> int:
+    """Estimate where a function ends — next function start or end of file."""
+    if fn_index + 1 < len(functions):
+        return functions[fn_index + 1]["line"] - 1
+    return total_lines
 
 
 def _extract_calls(content: str, file_path: str) -> List[Dict]:
@@ -82,71 +64,65 @@ def _extract_calls(content: str, file_path: str) -> List[Dict]:
     ext = file_path.split(".")[-1].lower()
 
     if ext == "py":
-        # Direct calls: func()
-        for m in re.finditer(r'(?<!\bdef\s)(\w+)\s*\(', content):
-            calls.append({
-                "callee": m.group(1),
-                "file": file_path,
-                "line": content[:m.start()].count("\n") + 1,
-            })
-        # Method calls: self.method() or obj.method()
+        for m in re.finditer(r'(?<!\bdef\s)\b(\w+)\s*\(', content):
+            calls.append({"callee": m.group(1), "file": file_path,
+                          "line": content[:m.start()].count("\n") + 1})
         for m in re.finditer(r'(?:self|cls)\.(\w+)\s*\(', content):
-            calls.append({
-                "callee": m.group(1),
-                "file": file_path,
-                "line": content[:m.start()].count("\n") + 1,
-            })
-        # Await calls: await something()
+            calls.append({"callee": m.group(1), "file": file_path,
+                          "line": content[:m.start()].count("\n") + 1})
         for m in re.finditer(r'await\s+(?:\w+\.)*(\w+)\s*\(', content):
-            calls.append({
-                "callee": m.group(1),
-                "file": file_path,
-                "line": content[:m.start()].count("\n") + 1,
-            })
-
+            calls.append({"callee": m.group(1), "file": file_path,
+                          "line": content[:m.start()].count("\n") + 1})
     elif ext in ("js", "ts", "jsx", "tsx"):
         for m in re.finditer(r'(?:await\s+)?(?:\w+\.)*(\w+)\s*\(', content):
             name = m.group(1)
-            if name not in ("if", "for", "while", "switch", "catch", "return", "typeof", "instanceof"):
-                calls.append({
-                    "callee": name,
-                    "file": file_path,
-                    "line": content[:m.start()].count("\n") + 1,
-                })
-
+            if name not in ("if","for","while","switch","catch","return","typeof","instanceof","require"):
+                calls.append({"callee": name, "file": file_path,
+                              "line": content[:m.start()].count("\n") + 1})
     return calls
 
 
 def build_call_graph(files: List[Dict], findings: List[Dict]) -> nx.DiGraph:
     G = nx.DiGraph()
 
-    # Index findings by file + approximate line
-    finding_index: Dict = {}
+    # Index findings by file
+    finding_index: Dict[str, List] = {}
     for f in findings:
-        key = f["file_path"]
-        finding_index.setdefault(key, []).append(f)
+        finding_index.setdefault(f["file_path"], []).append(f)
 
-    # Build node for each function
-    all_functions: Dict[str, str] = {}  # name -> node_id
+    all_functions: Dict[str, str] = {}
 
     for file_info in files:
         ext = file_info["path"].split(".")[-1].lower()
         if ext not in ("py", "js", "ts", "jsx", "tsx", "php"):
             continue
 
-        funcs = _extract_functions(file_info["content"], file_info["path"])
-        for fn in funcs:
-            node_id = f"{fn['file']}::{fn['name']}"
+        content = file_info["content"]
+        total_lines = content.count("\n") + 1
+        funcs = _extract_functions(content, file_info["path"])
+        funcs_sorted = sorted(funcs, key=lambda x: x["line"])
 
-            # Find vulns at or near this function's line
+        for i, fn in enumerate(funcs_sorted):
+            node_id = f"{fn['file']}::{fn['name']}"
+            fn_start = fn["line"]
+            fn_end = _get_function_end_line(funcs_sorted, i, total_lines)
+
+            # Assign findings that fall WITHIN this function's line range
             file_findings = finding_index.get(fn["file"], [])
-            fn_vulns = []
-            for fnd in file_findings:
-                fnd_line = fnd.get("line_number", 0)
-                fn_line = fn["line"]
-                # Consider vuln belongs to function if within 30 lines after definition
-                if fn_line <= fnd_line <= fn_line + 30:
-                    fn_vulns.append(fnd)
+            fn_vulns = [
+                fnd for fnd in file_findings
+                if fn_start <= fnd.get("line_number", 0) <= fn_end
+            ]
+
+            # Also assign file-level findings to first function if no line match
+            if not fn_vulns and i == 0:
+                fn_vulns = [
+                    fnd for fnd in file_findings
+                    if not any(
+                        other_fn["line"] <= fnd.get("line_number", 0)
+                        for other_fn in funcs_sorted[1:]
+                    )
+                ]
 
             max_sev = max(
                 (SEVERITY_RANK.get(v["severity"], 0) for v in fn_vulns),
@@ -156,16 +132,15 @@ def build_call_graph(files: List[Dict], findings: List[Dict]) -> nx.DiGraph:
             G.add_node(node_id, **{
                 "function": fn["name"],
                 "file": fn["file"],
-                "line": fn["line"],
+                "line": fn_start,
                 "type": fn["type"],
                 "vulns": fn_vulns,
                 "has_vuln": len(fn_vulns) > 0,
                 "max_severity": max_sev,
             })
-            # Keep last definition if duplicate names
             all_functions[fn["name"]] = node_id
 
-    # Add edges via call relationships
+    # Add edges
     for file_info in files:
         ext = file_info["path"].split(".")[-1].lower()
         if ext not in ("py", "js", "ts", "jsx", "tsx", "php"):
@@ -173,24 +148,24 @@ def build_call_graph(files: List[Dict], findings: List[Dict]) -> nx.DiGraph:
 
         content = file_info["content"]
         calls = _extract_calls(content, file_info["path"])
-        caller_funcs = _extract_functions(content, file_info["path"])
+        caller_funcs = sorted(
+            _extract_functions(content, file_info["path"]),
+            key=lambda x: x["line"]
+        )
 
         for call in calls:
             if call["callee"] not in all_functions:
                 continue
             callee_node = all_functions[call["callee"]]
 
-            # Find which function this call is inside
             caller_node = None
             for fn in reversed(caller_funcs):
                 if fn["line"] <= call["line"]:
                     caller_node = f"{fn['file']}::{fn['name']}"
                     break
 
-            if (caller_node and
-                caller_node != callee_node and
-                G.has_node(caller_node) and
-                G.has_node(callee_node)):
+            if (caller_node and caller_node != callee_node and
+                    G.has_node(caller_node) and G.has_node(callee_node)):
                 G.add_edge(caller_node, callee_node)
 
     log.info("Call graph built", nodes=G.number_of_nodes(), edges=G.number_of_edges())
@@ -198,12 +173,14 @@ def build_call_graph(files: List[Dict], findings: List[Dict]) -> nx.DiGraph:
 
 
 def find_vuln_chains(G: nx.DiGraph, min_chain_severity: int = 1) -> List[Dict]:
-    """Find paths where multiple vulnerabilities connect into exploit chains."""
+    """Find exploit chains — lowered threshold to catch more real chains."""
     chains = []
     vuln_nodes = [n for n, d in G.nodes(data=True) if d.get("has_vuln")]
 
+    log.info("Finding chains", vuln_nodes=len(vuln_nodes), total_nodes=G.number_of_nodes())
+
+    # If fewer than 2 vuln nodes, return single high-severity findings as chains
     if len(vuln_nodes) < 2:
-        # Not enough vuln nodes for chains — try single-node chains with high severity
         for node, data in G.nodes(data=True):
             if data.get("max_severity", 0) >= 3:
                 vulns = data.get("vulns", [])
@@ -233,10 +210,9 @@ def find_vuln_chains(G: nx.DiGraph, min_chain_severity: int = 1) -> List[Dict]:
                 for path in paths:
                     path_vulns = []
                     for node in path:
-                        node_data = G.nodes[node]
-                        path_vulns.extend(node_data.get("vulns", []))
+                        path_vulns.extend(G.nodes[node].get("vulns", []))
 
-                    if len(path_vulns) < 1:
+                    if not path_vulns:
                         continue
 
                     max_sev = max(
@@ -245,13 +221,12 @@ def find_vuln_chains(G: nx.DiGraph, min_chain_severity: int = 1) -> List[Dict]:
                     if max_sev < min_chain_severity:
                         continue
 
-                    escalated = _escalate_severity(path_vulns)
                     chains.append({
                         "chain_id": f"chain_{len(chains)+1}",
                         "nodes": path,
                         "vulns": path_vulns,
                         "length": len(path),
-                        "escalated_severity": escalated,
+                        "escalated_severity": _escalate_severity(path_vulns),
                         "attack_narrative": _build_narrative(path_vulns, path, G),
                     })
                     seen_pairs.add(pair)
@@ -259,12 +234,12 @@ def find_vuln_chains(G: nx.DiGraph, min_chain_severity: int = 1) -> List[Dict]:
             except nx.NetworkXError:
                 continue
 
-    # Deduplicate and sort by severity
+    # Deduplicate
     seen_keys = set()
     unique = []
     for chain in sorted(
         chains,
-        key=lambda c: SEVERITY_RANK.get(c["escalated_severity"], 0),
+        key=lambda c: (SEVERITY_RANK.get(c["escalated_severity"], 0), c["length"]),
         reverse=True
     ):
         key = frozenset(
@@ -294,14 +269,15 @@ def _escalate_severity(vulns: List[Dict]) -> str:
 def _build_narrative(vulns: List[Dict], path: List[str], G: nx.DiGraph) -> str:
     steps = []
     for i, vuln in enumerate(vulns[:6], 1):
-        fn_name = vuln.get("function_name", path[min(i-1, len(path)-1)].split("::")[-1] if path else "")
+        fn = path[min(i-1, len(path)-1)].split("::")[-1] if path else "unknown"
         steps.append(
-            f"Step {i}: Exploit {vuln['title']} in "
-            f"`{vuln['file_path']}:{vuln.get('line_number','?')}`\n"
-            f"  → {vuln['plain_impact']}"
+            f"Step {i}: [{vuln.get('severity','').upper()}] {vuln['title']}\n"
+            f"  File: {vuln['file_path']}:{vuln.get('line_number','?')}\n"
+            f"  Impact: {vuln['plain_impact']}"
         )
     if len(path) > 1:
-        steps.append(f"\nAttack path: {' → '.join(n.split('::')[-1] for n in path[:6])}")
+        path_str = " → ".join(n.split("::")[-1] for n in path[:6])
+        steps.append(f"\nCall path: {path_str}")
     return "\n".join(steps)
 
 
