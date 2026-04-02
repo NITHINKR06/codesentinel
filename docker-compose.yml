@@ -69,6 +69,41 @@ services:
       - /app/node_modules
     command: npm run dev
 
+  demo-sqli:
+    build: ./backend/demo-targets
+    environment:
+      - TARGET_TYPE=sqli
+    ports:
+      - "8101:5000"
+
+  demo-xss:
+    build: ./backend/demo-targets
+    environment:
+      - TARGET_TYPE=xss
+    ports:
+      - "8102:5000"
+
+  demo-path:
+    build: ./backend/demo-targets
+    environment:
+      - TARGET_TYPE=path_traversal
+    ports:
+      - "8103:5000"
+
+  demo-ssrf:
+    build: ./backend/demo-targets
+    environment:
+      - TARGET_TYPE=ssrf
+    ports:
+      - "8104:5000"
+
+  demo-rce:
+    build: ./backend/demo-targets
+    environment:
+      - TARGET_TYPE=rce
+    ports:
+      - "8105:5000"
+
 volumes:
   pgdata:
   ollama_data:
