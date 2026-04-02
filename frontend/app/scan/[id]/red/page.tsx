@@ -5,7 +5,7 @@ import { getReport } from "@/lib/api"
 import { ScanReport } from "@/types"
 import {
   Shield, Terminal, AlertTriangle, Globe, GitCommit,
-  Cpu, ChevronDown, ChevronUp, Target, Zap, Eye
+  Cpu, Target, Zap, Eye
 } from "lucide-react"
 
 const SEV_COLORS: Record<string, string> = {
@@ -29,9 +29,9 @@ export default function RedTeamPage() {
 
   if (!report) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-red-400 animate-pulse font-mono text-sm">
-          [red agent] loading intelligence...
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="text-secondary animate-pulse font-mono text-sm">
+          [red agent] compiling offensive telemetry...
         </div>
       </div>
     )
@@ -51,33 +51,127 @@ export default function RedTeamPage() {
   ]
 
   return (
-    <main className="min-h-screen bg-gray-950 text-white font-mono">
-      {/* Header */}
-      <header className="border-b border-red-900/50 px-6 py-4 bg-red-950/10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Shield className="w-5 h-5 text-red-400" />
-            <span className="text-red-400 font-semibold">RED TEAM</span>
-            <span className="text-gray-600">/</span>
-            <span className="text-gray-400 text-sm">{report.repo_name || report.github_url}</span>
-          </div>
-          <div className="flex items-center gap-4 text-xs">
-            <span className="text-red-400">{report.critical_count} critical</span>
-            <span className="text-orange-400">{report.high_count} high</span>
-            <span className="text-gray-500">score: {report.score_before}/100</span>
-            <a
-              href={`/scan/${scanId}/report`}
-              className="text-blue-400 border border-blue-800 px-3 py-1 rounded hover:bg-blue-900/20"
-            >
-              → Blue Team
-            </a>
+    <main className="bg-surface text-on-surface font-body selection:bg-secondary/30 min-h-screen">
+      {/* Top nav */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#131313] flex justify-between items-center w-full px-6 py-3 h-16 font-headline text-sm tracking-tight">
+        <div className="flex items-center gap-8">
+          <span className="text-xl font-bold tracking-tighter text-primary">CodeSentinel</span>
+          <div className="hidden md:flex gap-6 items-center">
+            <span className="text-on-surface/70 hover:bg-[#2A2A2A] hover:text-primary transition-colors px-3 py-1 rounded">Network</span>
+            <span className="text-primary font-bold border-b-2 border-primary px-3 py-1">Security Reports</span>
+            <span className="text-on-surface/70 hover:bg-[#2A2A2A] hover:text-primary transition-colors px-3 py-1 rounded">Assets</span>
           </div>
         </div>
-      </header>
+        <div className="flex items-center gap-4">
+          <div className="bg-surface-container-low flex items-center px-3 py-1.5 rounded gap-2">
+            <span className="material-symbols-outlined text-primary text-lg">search</span>
+            <input
+              className="bg-transparent border-none focus:ring-0 text-xs w-48 text-on-surface-variant"
+              placeholder="Search Intel..."
+              type="text"
+            />
+          </div>
+          <button className="material-symbols-outlined text-primary hover:bg-[#2A2A2A] p-2 rounded transition-colors" type="button">
+            sensors
+          </button>
+          <button className="material-symbols-outlined text-on-surface hover:bg-[#2A2A2A] p-2 rounded transition-colors" type="button">
+            account_circle
+          </button>
+        </div>
+      </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        {/* Stats row */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="flex pt-16 min-h-screen">
+        {/* Side nav */}
+        <aside className="hidden md:flex fixed left-0 w-64 h-[calc(100vh-64px)] bg-surface-container-low flex-col border-r border-outline/15 shadow-[4px_0_24px_rgba(152,203,255,0.05)] z-40">
+          <div className="p-6 border-b border-outline-variant/10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-sm flex items-center justify-center border border-secondary/20 bg-surface-container-highest">
+                <Shield className="w-5 h-5 text-secondary" />
+              </div>
+              <div>
+                <p className="text-[10px] font-mono text-secondary tracking-widest uppercase">System Administrator Profile</p>
+                <p className="font-headline font-bold text-sm text-on-surface">CodeSentinel Ops</p>
+                <p className="text-[10px] text-primary opacity-70">Level 4 Clearance</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 py-6 space-y-1 text-xs uppercase tracking-widest font-semibold">
+            <div className="flex items-center gap-4 px-6 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all">
+              <span className="material-symbols-outlined text-lg">dashboard</span>
+              Dashboard
+            </div>
+            <div className="flex items-center gap-4 px-6 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all">
+              <span className="material-symbols-outlined text-lg">radar</span>
+              Active Scans
+            </div>
+            <div className="flex items-center gap-4 px-6 py-3 bg-[#2A2A2A] text-primary border-l-4 border-primary transition-all">
+              <span className="material-symbols-outlined text-lg">security</span>
+              Red Team Reports
+            </div>
+            <div className="flex items-center gap-4 px-6 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all">
+              <span className="material-symbols-outlined text-lg">shield</span>
+              Blue Team Reports
+            </div>
+            <div className="flex items-center gap-4 px-6 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all">
+              <span className="material-symbols-outlined text-lg">settings</span>
+              Settings
+            </div>
+          </div>
+          <div className="p-6 border-t border-outline-variant/10 space-y-1 text-xs uppercase tracking-widest font-semibold">
+            <div className="flex items-center gap-4 py-2 text-on-surface/60 hover:text-on-surface transition-all">
+              <span className="material-symbols-outlined text-lg">help_center</span>
+              Support
+            </div>
+            <div className="flex items-center gap-4 py-2 text-on-surface/60 hover:text-on-surface transition-all">
+              <span className="material-symbols-outlined text-lg">terminal</span>
+              Logs
+            </div>
+          </div>
+        </aside>
+
+        {/* Main content */}
+        <div className="flex-1 md:ml-64 p-8 bg-surface">
+          {/* Header narrative + KPIs */}
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-8 mb-12">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-2 py-1 bg-secondary-container/20 border border-secondary/20 rounded-sm mb-4">
+                <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                <span className="text-[10px] font-mono text-secondary uppercase font-bold tracking-[0.2em]">
+                  Offensive Mode Active
+                </span>
+              </div>
+              <h1 className="font-headline text-4xl md:text-5xl font-extrabold text-on-surface tracking-tighter mb-4 leading-none">
+                Red Team <span className="text-secondary">Report</span>.
+              </h1>
+              <p className="font-body text-on-surface-variant text-lg leading-relaxed">
+                Simulating advanced persistent threats (APT) against internal infrastructure. This document outlines the
+                feasibility of systemic compromise via chained misconfigurations.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full lg:w-auto">
+              <div className="bg-surface-container p-5 border-l-2 border-secondary flex flex-col justify-between h-32 w-full lg:w-44">
+                <span className="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">
+                  Active Exploit Chains
+                </span>
+                <span className="text-4xl font-headline font-bold text-secondary">{report.chains?.length || 0}</span>
+              </div>
+              <div className="bg-surface-container p-5 border-l-2 border-primary flex flex-col justify-between h-32 w-full lg:w-44">
+                <span className="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">
+                  Critical Recon Intel
+                </span>
+                <span className="text-4xl font-headline font-bold text-primary">{recon.exposed_secrets?.length || 0}</span>
+              </div>
+              <div className="bg-surface-container p-5 border-l-2 border-secondary flex flex-col justify-between h-32 w-full lg:w-44">
+                <span className="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">
+                  Exposed Secrets
+                </span>
+                <span className="text-4xl font-headline font-bold text-secondary">{report.ghost_commits?.length || 0}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats row */}
+          <div className="grid grid-cols-4 gap-4 mb-6 font-mono">
           {[
             { label: "Exploit surface", value: report.total_findings, color: "text-red-400" },
             { label: "Confirmed exploits", value: confirmedSims.length, color: "text-orange-400" },
@@ -91,7 +185,7 @@ export default function RedTeamPage() {
           ))}
         </div>
 
-        {/* Threat actor banner */}
+          {/* Threat actor banner */}
         {report.threat_actor && (
           <div className="bg-red-950/30 border border-red-900/50 rounded-xl p-4 mb-6">
             <div className="flex items-center gap-3">
@@ -109,8 +203,8 @@ export default function RedTeamPage() {
           </div>
         )}
 
-        {/* Section tabs */}
-        <div className="flex gap-2 mb-6 flex-wrap">
+          {/* Section tabs */}
+          <div className="flex gap-2 mb-6 flex-wrap border-b border-outline-variant/20 pb-2">
           {sections.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -127,9 +221,9 @@ export default function RedTeamPage() {
           ))}
         </div>
 
-        {/* NARRATIVE */}
-        {activeSection === "narrative" && (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          {/* NARRATIVE */}
+          {activeSection === "narrative" && (
+            <div className="bg-surface-container-low border border-outline-variant/20 rounded-xl p-6">
             <div className="flex items-center gap-2 mb-4 text-sm text-red-400">
               <Terminal className="w-4 h-4" />
               AI-Generated Attack Narrative
@@ -161,11 +255,11 @@ export default function RedTeamPage() {
               </div>
             )}
           </div>
-        )}
+          )}
 
-        {/* RECON */}
-        {activeSection === "recon" && (
-          <div className="space-y-4">
+          {/* RECON */}
+          {activeSection === "recon" && (
+            <div className="space-y-4">
             {/* Tech stack */}
             {recon.tech_stack?.length > 0 && (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
@@ -260,11 +354,11 @@ export default function RedTeamPage() {
               </div>
             )}
           </div>
-        )}
+          )}
 
-        {/* SIMULATIONS */}
-        {activeSection === "simulation" && (
-          <div className="space-y-3">
+          {/* SIMULATIONS */}
+          {activeSection === "simulation" && (
+            <div className="space-y-3">
             {simulations.length === 0 && (
               <div className="text-gray-500 text-sm font-sans p-4">
                 No simulations run — scan needs PoC exploits generated first.
@@ -302,11 +396,11 @@ export default function RedTeamPage() {
               </div>
             ))}
           </div>
-        )}
+          )}
 
-        {/* CHAINS */}
-        {activeSection === "chains" && (
-          <div className="space-y-4">
+          {/* CHAINS */}
+          {activeSection === "chains" && (
+            <div className="space-y-4">
             {(!report.chains || report.chains.length === 0) && (
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-sm text-gray-400 font-sans">
                 No exploit chains detected. Chains require multiple vulnerabilities connected through function call paths.
@@ -337,11 +431,11 @@ export default function RedTeamPage() {
               </div>
             ))}
           </div>
-        )}
+          )}
 
-        {/* GHOST COMMITS */}
-        {activeSection === "ghost" && (
-          <div className="space-y-3">
+          {/* GHOST COMMITS */}
+          {activeSection === "ghost" && (
+            <div className="space-y-3">
             {(!report.ghost_commits || report.ghost_commits.length === 0) && (
               <div className="text-green-400 text-sm font-sans p-4">
                 ✓ No secrets found in git history
@@ -369,8 +463,12 @@ export default function RedTeamPage() {
               </div>
             ))}
           </div>
-        )}
+          )}
+        </div>
+        </div>
       </div>
+      <div className="fixed bottom-0 right-0 w-72 h-72 bg-secondary/10 rounded-full blur-[80px] pointer-events-none -z-10" />
+      <div className="fixed top-20 left-64 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none -z-10" />
     </main>
   )
 }
