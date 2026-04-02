@@ -353,7 +353,7 @@ export default function ScanPage() {
                       }`}
                     >
                       <span className="text-outline-variant shrink-0">
-                        {new Date(event.timestamp || Date.now()).toLocaleTimeString("en-US", { hour12: false })}
+                        {new Date().toLocaleTimeString("en-US", { hour12: false })}
                       </span>
                       <span className={`shrink-0 w-12 uppercase tracking-tighter ${STAGE_COLORS[event.stage] || "text-primary"}`}>
                         [{STAGE_LABELS[event.stage] || event.stage}]
