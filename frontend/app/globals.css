@@ -38,3 +38,24 @@ pre, code, .font-mono {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #4B5563; }
+
+/* 404 page helpers */
+.glitch-text {
+  position: relative;
+  text-shadow:
+    0.05em 0 0 rgba(255, 180, 170, 0.75),
+    -0.025em -0.05em 0 rgba(152, 203, 255, 0.75),
+    0.025em 0.05em 0 rgba(42, 229, 0, 0.75);
+}
+
+.grid-noise {
+  background-image:
+    linear-gradient(rgba(152, 203, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(152, 203, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.oscilloscope-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
