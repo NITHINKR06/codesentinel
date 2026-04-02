@@ -16,11 +16,41 @@ SUPPORTED_EXTENSIONS = {
     ".sh", ".bash", ".html", ".sql",
 }
 
+LANGUAGE_BY_EXTENSION = {
+    ".py": "python",
+    ".js": "javascript",
+    ".ts": "typescript",
+    ".jsx": "javascript",
+    ".tsx": "typescript",
+    ".php": "php",
+    ".go": "go",
+    ".java": "java",
+    ".rb": "ruby",
+    ".cs": "csharp",
+    ".sh": "shell",
+    ".bash": "shell",
+    ".html": "html",
+    ".sql": "sql",
+    ".json": "json",
+    ".yml": "yaml",
+    ".yaml": "yaml",
+    ".toml": "toml",
+}
+
 SKIP_DIRS = {
     "node_modules", ".git", "__pycache__", ".next",
     "dist", "build", "vendor", ".venv", "venv",
     "coverage", ".pytest_cache",
 }
+
+
+def detect_language(path: str, content: str) -> str:
+    ext = Path(path).suffix.lower()
+    if ext in LANGUAGE_BY_EXTENSION:
+        return LANGUAGE_BY_EXTENSION[ext]
+    if content.startswith("#!") and "python" in content.splitlines()[0].lower():
+        return "python"
+    return "unknown"
 
 
 class RepoIngestion:
@@ -56,6 +86,7 @@ class RepoIngestion:
                         "path": rel_path,
                         "full_path": full_path,
                         "extension": ext,
+                        "language": detect_language(rel_path, content),
                         "content": content,
                         "size": len(content),
                     })

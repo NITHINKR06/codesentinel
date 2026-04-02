@@ -13,6 +13,34 @@ SUPPORTED_EXTENSIONS = {
     ".go", ".java", ".rb", ".env", ".yml", ".yaml",
     ".json", ".toml", ".sh", ".html", ".sql",
 }
+
+LANGUAGE_BY_EXTENSION = {
+    ".py": "python",
+    ".js": "javascript",
+    ".ts": "typescript",
+    ".jsx": "javascript",
+    ".tsx": "typescript",
+    ".php": "php",
+    ".go": "go",
+    ".java": "java",
+    ".rb": "ruby",
+    ".sh": "shell",
+    ".html": "html",
+    ".sql": "sql",
+    ".json": "json",
+    ".yml": "yaml",
+    ".yaml": "yaml",
+    ".toml": "toml",
+}
+
+
+def detect_language(path: str, content: str) -> str:
+    ext = Path(path).suffix.lower()
+    if ext in LANGUAGE_BY_EXTENSION:
+        return LANGUAGE_BY_EXTENSION[ext]
+    if content.startswith("#!") and "python" in content.splitlines()[0].lower():
+        return "python"
+    return "unknown"
 SKIP_DIRS = {"node_modules", "__pycache__", ".git", "dist", "build", "vendor"}
 
 
@@ -49,6 +77,7 @@ class ZipIngestion:
                         "path": rel_path,
                         "full_path": full_path,
                         "extension": ext,
+                        "language": detect_language(rel_path, content),
                         "content": content,
                         "size": len(content),
                     })
