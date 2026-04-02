@@ -1,6 +1,8 @@
 "use client"
 import { useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
+import OpsSidebar from "@/components/OpsSidebar"
 import { startScan, uploadZip } from "@/lib/api"
 
 type Mode = "github" | "url" | "zip"
@@ -47,9 +49,24 @@ export default function HomePage() {
         <div className="flex items-center gap-8">
           <span className="text-xl font-bold tracking-tighter text-[#98CBFF]">CodeSentinel</span>
           <nav className="hidden md:flex gap-6 items-center">
-            <span className="text-[#98CBFF] font-bold border-b-2 border-[#98CBFF] px-2 py-1">Dashboard</span>
-            <span className="text-[#E5E2E1] opacity-70 hover:bg-[#2A2A2A] hover:text-[#98CBFF] transition-colors px-2 py-1 rounded-sm">Telemetry</span>
-            <span className="text-[#E5E2E1] opacity-70 hover:bg-[#2A2A2A] hover:text-[#98CBFF] transition-colors px-2 py-1 rounded-sm">Threat Map</span>
+            <Link
+              href="/dashboard"
+              className="text-[#98CBFF] font-bold border-b-2 border-[#98CBFF] px-2 py-1"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/telemetry"
+              className="text-[#E5E2E1] opacity-70 hover:bg-[#2A2A2A] hover:text-[#98CBFF] transition-colors px-2 py-1 rounded-sm"
+            >
+              Telemetry
+            </Link>
+            <Link
+              href="/threat-map"
+              className="text-[#E5E2E1] opacity-70 hover:bg-[#2A2A2A] hover:text-[#98CBFF] transition-colors px-2 py-1 rounded-sm"
+            >
+              Threat Map
+            </Link>
           </nav>
         </div>
         <div className="flex items-center gap-4">
@@ -74,51 +91,7 @@ export default function HomePage() {
 
       <div className="flex flex-1 pt-16">
         {/* Sidebar */}
-        <aside className="hidden md:flex flex-col h-[calc(100vh-64px)] w-64 bg-[#1C1B1B] text-[#98CBFF] text-xs uppercase tracking-widest font-semibold border-r border-[#88919D]/15 shadow-[4px_0_24px_rgba(152,203,255,0.05)]">
-          <div className="p-6 border-b border-[#88919D]/10">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-sm bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  security
-                </span>
-              </div>
-              <div>
-                <div className="text-[10px] text-primary/70 mb-0.5">CodeSentinel Ops</div>
-                <div className="text-[9px] text-on-surface/50 tracking-[0.2em]">Level 4 Clearance</div>
-              </div>
-            </div>
-          </div>
-          <nav className="flex-1 py-4">
-            <div className="space-y-1 px-3">
-              {[
-                { label: "Dashboard", icon: "dashboard" },
-                { label: "Active Scans", icon: "radar" },
-                { label: "Red Team Reports", icon: "security" },
-                { label: "Blue Team Reports", icon: "shield" },
-                { label: "Settings", icon: "settings" },
-              ].map(item => (
-                <button
-                  key={item.label}
-                  className="flex w-full items-center gap-3 px-4 py-3 rounded-sm text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all"
-                  type="button"
-                >
-                  <span className="material-symbols-outlined text-lg">{item.icon}</span>
-                  <span>{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </nav>
-          <div className="p-4 space-y-1 border-t border-[#88919D]/10">
-            <button className="flex items-center gap-3 px-4 py-2 rounded-sm text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all" type="button">
-              <span className="material-symbols-outlined text-lg">help_center</span>
-              <span>Support</span>
-            </button>
-            <button className="flex items-center gap-3 px-4 py-2 rounded-sm text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all" type="button">
-              <span className="material-symbols-outlined text-lg">terminal</span>
-              <span>Logs</span>
-            </button>
-          </div>
-        </aside>
+        <OpsSidebar active="scan" className="hidden md:flex h-[calc(100vh-64px)] w-64" />
 
         {/* Main tactical canvas */}
         <section className="flex-1 relative overflow-hidden grid-bg flex items-center justify-center p-6">
@@ -368,24 +341,24 @@ export default function HomePage() {
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[#1C1B1B] text-[#98CBFF] flex justify-around items-center h-16 px-4 z-50">
-        <button className="flex flex-col items-center gap-1 opacity-60" type="button">
+        <Link href="/dashboard" className="flex flex-col items-center gap-1 opacity-60">
           <span className="material-symbols-outlined text-lg">dashboard</span>
           <span className="text-[9px] uppercase font-bold">Dash</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 text-[#98CBFF] border-t-2 border-[#98CBFF] pt-1" type="button">
+        </Link>
+        <Link href="/" className="flex flex-col items-center gap-1 text-[#98CBFF] border-t-2 border-[#98CBFF] pt-1">
           <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
             radar
           </span>
           <span className="text-[9px] uppercase font-bold">Scan</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 opacity-60" type="button">
+        </Link>
+        <Link href="/dashboard" className="flex flex-col items-center gap-1 opacity-60">
           <span className="material-symbols-outlined text-lg">security</span>
           <span className="text-[9px] uppercase font-bold">Threats</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 opacity-60" type="button">
+        </Link>
+        <Link href="/dashboard" className="flex flex-col items-center gap-1 opacity-60">
           <span className="material-symbols-outlined text-lg">settings</span>
           <span className="text-[9px] uppercase font-bold">Settings</span>
-        </button>
+        </Link>
       </nav>
     </main>
   )

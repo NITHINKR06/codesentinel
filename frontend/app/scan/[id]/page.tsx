@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { connectToScan } from "@/lib/socket"
 import { ScanEvent } from "@/types"
+import OpsSidebar from "@/components/OpsSidebar"
 
 const STAGE_LABELS: Record<string, string> = {
   ingesting: "Cloning repository",
@@ -82,55 +83,9 @@ export default function ScanPage() {
 
   return (
     <main className="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary min-h-screen">
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex min-h-screen overflow-x-hidden">
         {/* SideNav */}
-        <aside className="bg-surface-container-low w-64 flex flex-col h-full border-r border-outline/15 shadow-[4px_0_24px_rgba(152,203,255,0.05)] hidden lg:flex">
-          <div className="p-6 border-b border-outline/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-sm bg-surface-container-high border border-outline-variant/30 flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary">security</span>
-              </div>
-              <div>
-                <h2 className="font-headline font-bold text-sm text-primary tracking-tight">CodeSentinel Ops</h2>
-                <p className="font-mono text-[10px] opacity-60 uppercase tracking-widest text-on-surface">Level 4 Clearance</p>
-              </div>
-            </div>
-          </div>
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto text-xs font-semibold uppercase tracking-widest">
-            <p className="text-[10px] text-on-surface opacity-40 px-2 mb-3">Core Modules</p>
-            {[
-              { label: "Dashboard", icon: "dashboard" },
-              { label: "Active Scans", icon: "radar" },
-              { label: "Red Team Reports", icon: "security" },
-              { label: "Blue Team Reports", icon: "shield" },
-              { label: "Settings", icon: "settings" },
-            ].map(item => (
-              <div
-                key={item.label}
-                className={`flex items-center gap-3 px-4 py-3 rounded-sm transition-all ${
-                  item.label === "Active Scans"
-                    ? "bg-[#2A2A2A] text-primary border-l-4 border-primary"
-                    : "text-on-surface/70 hover:bg-[#201F1F] hover:text-on-surface"
-                }`}
-              >
-                <span className="material-symbols-outlined text-lg">{item.icon}</span>
-                <span>{item.label}</span>
-              </div>
-            ))}
-          </nav>
-          <div className="p-4 border-t border-outline/10 bg-[#131313] text-xs uppercase tracking-widest font-semibold">
-            <div className="space-y-1">
-              <div className="flex items-center gap-3 px-4 py-2 text-on-surface/70 hover:bg-[#201F1F] hover:text-on-surface transition-all">
-                <span className="material-symbols-outlined text-base">help_center</span>
-                <span>Support</span>
-              </div>
-              <div className="flex items-center gap-3 px-4 py-2 text-on-surface/70 hover:bg-[#201F1F] hover:text-on-surface transition-all">
-                <span className="material-symbols-outlined text-base">terminal</span>
-                <span>Logs</span>
-              </div>
-            </div>
-          </div>
-        </aside>
+        <OpsSidebar active="scan" scanId={scanId} className="hidden lg:flex w-64 h-full" />
 
         {/* Main column */}
         <div className="flex-1 flex flex-col min-w-0">
@@ -176,7 +131,7 @@ export default function ScanPage() {
           </header>
 
           {/* Content grid */}
-          <div className="flex-1 overflow-hidden p-6 bg-background grid grid-cols-12 gap-6">
+          <div className="flex-1 p-6 bg-background grid grid-cols-12 gap-6">
             {/* Left column: target + pipeline */}
             <div className="col-span-12 lg:col-span-3 space-y-6">
               <div className="bg-surface-container-low p-6 rounded border-l-2 border-primary/40">

@@ -13,11 +13,11 @@ def main():
         },
         {
             "name": "Backend",
-            "cmd": "cd backend && python3 -m venv venv && source /home/nithin/Documents/codesentinel/backend/venv/bin/activate.fish && uvicorn main:app --reload"
+            "cmd": "cd backend && python3 -m venv venv && source /home/nithin/Documents/codesentinel/backend/venv/bin/activate.fish && uvicorn main:app --reload --port 8001"
         },
         {
             "name": "Frontend",
-            "cmd": "cd frontend && yarn dev"
+            "cmd": "cd frontend && NEXT_PUBLIC_API_URL=http://localhost:8001 NEXT_PUBLIC_WS_URL=ws://localhost:8001 yarn dev"
         }
     ]
 

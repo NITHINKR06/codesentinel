@@ -10,6 +10,7 @@ import AttackGraph from "@/components/AttackGraph"
 import ThreatActorCard from "@/components/ThreatActorCard"
 import PatchViewer from "@/components/PatchViewer"
 import { Shield, GitPullRequest, AlertTriangle, Bug, History } from "lucide-react"
+import OpsSidebar from "@/components/OpsSidebar"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
@@ -123,51 +124,11 @@ export default function ReportPage() {
 
       <div className="flex flex-1 pt-16 overflow-hidden">
         {/* Side navigation */}
-        <aside className="bg-surface-container-low text-primary font-body text-xs uppercase tracking-widest font-semibold flex flex-col h-full border-r border-outline/15 w-64 fixed left-0 shadow-[4px_0_24px_rgba(152,203,255,0.05)] hidden md:flex">
-          <div className="p-6 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-sm bg-surface-container-highest flex items-center justify-center border border-primary/20">
-                <Shield className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-[10px] text-on-surface opacity-60 normal-case tracking-normal">CodeSentinel Ops</p>
-                <p className="text-primary font-bold tracking-tight text-xs">Level 4 Clearance</p>
-              </div>
-            </div>
-          </div>
-          <nav className="flex-1 px-4 space-y-1">
-            <div className="flex items-center gap-3 px-4 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all rounded-sm">
-              <span className="material-symbols-outlined">dashboard</span>
-              <span>Dashboard</span>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all rounded-sm">
-              <span className="material-symbols-outlined">radar</span>
-              <span>Active Scans</span>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all rounded-sm">
-              <span className="material-symbols-outlined">security</span>
-              <span>Red Team Reports</span>
-            </div>
-            <div className="bg-surface-container-high text-primary border-l-4 border-primary flex items-center gap-3 px-4 py-3 rounded-sm">
-              <span className="material-symbols-outlined">shield</span>
-              <span>Blue Team Reports</span>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all rounded-sm">
-              <span className="material-symbols-outlined">settings</span>
-              <span>Settings</span>
-            </div>
-          </nav>
-          <div className="mt-auto p-4 space-y-1 border-top border-outline/10">
-            <div className="flex items-center gap-3 px-4 py-2 text-on-surface/60 hover:text-on-surface transition-all">
-              <span className="material-symbols-outlined text-sm">help_center</span>
-              <span className="text-[10px]">Support</span>
-            </div>
-            <div className="flex items-center gap-3 px-4 py-2 text-on-surface/60 hover:text-on-surface transition-all">
-              <span className="material-symbols-outlined text-sm">terminal</span>
-              <span className="text-[10px]">Logs</span>
-            </div>
-          </div>
-        </aside>
+        <OpsSidebar
+          active="blue"
+          scanId={scanId}
+          className="hidden md:flex bg-surface-container-low text-primary font-body text-xs uppercase tracking-widest font-semibold h-full border-r border-outline/15 w-64 fixed left-0 shadow-[4px_0_24px_rgba(152,203,255,0.05)]"
+        />
 
         {/* Main report content */}
         <section className="md:ml-64 flex-1 overflow-y-auto bg-surface p-8 scroll-smooth">

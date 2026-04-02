@@ -15,6 +15,7 @@ import {
   Zap,
   Eye,
 } from "lucide-react"
+import OpsSidebar from "@/components/OpsSidebar"
 
 const SEV_COLORS: Record<string, string> = {
   critical: "text-red-400 bg-red-900/20 border-red-800",
@@ -88,52 +89,11 @@ export default function RedTeamPage() {
 
       <div className="flex pt-16 min-h-screen">
         {/* Side nav */}
-        <aside className="hidden md:flex fixed left-0 w-64 h-[calc(100vh-64px)] bg-surface-container-low flex-col border-r border-outline/15 shadow-[4px_0_24px_rgba(152,203,255,0.05)] z-40">
-          <div className="p-6 border-b border-outline-variant/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-sm flex items-center justify-center border border-secondary/20 bg-surface-container-highest">
-                <Shield className="w-5 h-5 text-secondary" />
-              </div>
-              <div>
-                <p className="text-[10px] font-mono text-secondary tracking-widest uppercase">System Administrator Profile</p>
-                <p className="font-headline font-bold text-sm text-on-surface">CodeSentinel Ops</p>
-                <p className="text-[10px] text-primary opacity-70">Level 4 Clearance</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex-1 py-6 space-y-1 text-xs uppercase tracking-widest font-semibold">
-            <div className="flex items-center gap-4 px-6 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all">
-              <span className="material-symbols-outlined text-lg">dashboard</span>
-              Dashboard
-            </div>
-            <div className="flex items-center gap-4 px-6 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all">
-              <span className="material-symbols-outlined text-lg">radar</span>
-              Active Scans
-            </div>
-            <div className="flex items-center gap-4 px-6 py-3 bg-[#2A2A2A] text-primary border-l-4 border-primary transition-all">
-              <span className="material-symbols-outlined text-lg">security</span>
-              Red Team Reports
-            </div>
-            <div className="flex items-center gap-4 px-6 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all">
-              <span className="material-symbols-outlined text-lg">shield</span>
-              Blue Team Reports
-            </div>
-            <div className="flex items-center gap-4 px-6 py-3 text-on-surface/60 hover:bg-surface-container hover:text-on-surface transition-all">
-              <span className="material-symbols-outlined text-lg">settings</span>
-              Settings
-            </div>
-          </div>
-          <div className="p-6 border-t border-outline-variant/10 space-y-1 text-xs uppercase tracking-widest font-semibold">
-            <div className="flex items-center gap-4 py-2 text-on-surface/60 hover:text-on-surface transition-all">
-              <span className="material-symbols-outlined text-lg">help_center</span>
-              Support
-            </div>
-            <div className="flex items-center gap-4 py-2 text-on-surface/60 hover:text-on-surface transition-all">
-              <span className="material-symbols-outlined text-lg">terminal</span>
-              Logs
-            </div>
-          </div>
-        </aside>
+        <OpsSidebar
+          active="red"
+          scanId={scanId}
+          className="hidden md:flex fixed left-0 w-64 h-[calc(100vh-64px)] bg-surface-container-low z-40"
+        />
 
         {/* Main content */}
         <div className="flex-1 md:ml-64 p-8 bg-surface">
