@@ -92,7 +92,8 @@ Input (GitHub URL / ZIP / Live URL)
   ┌─────────────────────────────┐
   │         Red Engine          │
   │  AST Scan → Chain Builder   │
-  │  PoC Generator → Ghost Commit│
+  │  PoC Generator → Exploit    │
+  │  Agent + Sandbox + Oracle    │
   │  Threat Actor Profiler      │
   └─────────────────────────────┘
         ↓
@@ -131,6 +132,8 @@ Input (GitHub URL / ZIP / Live URL)
 ## Benchmark Harness
 
 CodeSentinel includes a manifest-driven benchmark runner for Juliet-style cases and real-CVE-style repos.
+
+The red-team demo path now uses a constrained exploit agent with fixed payload templates, a sandbox abstraction, and a type-specific confirmation oracle.
 
 Each benchmark case lives in its own directory and can include a `benchmark.json` file like this:
 
