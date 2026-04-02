@@ -128,6 +128,35 @@ Input (GitHub URL / ZIP / Live URL)
 **Frontend:** Next.js 14 · TypeScript · D3.js · TailwindCSS · Recharts  
 **Infra:** Docker Compose · GitHub API · GitHub Actions
 
+## Benchmark Harness
+
+CodeSentinel includes a manifest-driven benchmark runner for Juliet-style cases and real-CVE-style repos.
+
+Each benchmark case lives in its own directory and can include a `benchmark.json` file like this:
+
+```json
+{
+      "name": "sample-case",
+      "expected_findings": [
+            {
+                  "vuln_type": "sqli",
+                  "file_path": "app.py",
+                  "line_number": 42,
+                  "severity": "critical"
+            }
+      ]
+}
+```
+
+Run it from the `backend` directory:
+
+```bash
+python -m benchmarks.cli /path/to/benchmarks --output table
+python -m benchmarks.cli /path/to/benchmarks --output json --pretty
+```
+
+The runner reports per-case and aggregate precision, recall, and F1 using a small line-number tolerance to account for AST-based analysis.
+
 ## Ethical Use
 
 This tool is designed for:
