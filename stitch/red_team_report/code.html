@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CodeSentinel | Red Team Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-background": "#e5e2e1",
+                        "secondary": "#ffb4aa",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-error": "#690005",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-fixed": "#001d33",
+                        "surface-dim": "#131313",
+                        "primary": "#98cbff",
+                        "secondary-fixed-dim": "#ffb4aa",
+                        "inverse-on-surface": "#313030",
+                        "tertiary-container": "#20b500",
+                        "on-tertiary-fixed-variant": "#095300",
+                        "surface-container-highest": "#353534",
+                        "surface-tint": "#98cbff",
+                        "surface-container": "#201f1f",
+                        "surface-container-low": "#1c1b1b",
+                        "on-secondary-fixed-variant": "#930005",
+                        "inverse-surface": "#e5e2e1",
+                        "inverse-primary": "#00629d",
+                        "primary-container": "#00a3ff",
+                        "on-surface-variant": "#bec7d4",
+                        "tertiary-fixed-dim": "#2ae500",
+                        "on-primary-fixed-variant": "#004a77",
+                        "on-tertiary": "#053900",
+                        "on-tertiary-fixed": "#022100",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-container": "#00375a",
+                        "surface-variant": "#353534",
+                        "surface-container-high": "#2a2a2a",
+                        "tertiary-fixed": "#79ff5b",
+                        "outline": "#88919d",
+                        "surface": "#131313",
+                        "on-tertiary-container": "#053d00",
+                        "on-secondary-fixed": "#410001",
+                        "secondary-container": "#c5020b",
+                        "outline-variant": "#3f4852",
+                        "surface-bright": "#3a3939",
+                        "error": "#ffb4ab",
+                        "background": "#131313",
+                        "on-secondary-container": "#ffd2cc",
+                        "primary-fixed": "#cfe5ff",
+                        "primary-fixed-dim": "#98cbff",
+                        "tertiary": "#2ae500",
+                        "error-container": "#93000a",
+                        "on-secondary": "#690003",
+                        "on-primary": "#003354",
+                        "secondary-fixed": "#ffdad5"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glow-red {
+            box-shadow: 0 0 15px rgba(197, 2, 11, 0.3);
+        }
+        .scanline {
+            background: linear-gradient(to bottom, transparent 50%, rgba(255, 180, 170, 0.05) 50%);
+            background-size: 100% 4px;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-secondary/30">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-[#131313] flex justify-between items-center w-full px-6 py-3 h-16 font-['Space_Grotesk'] text-sm tracking-tight">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-[#98CBFF]">CodeSentinel</span>
+<div class="hidden md:flex gap-6 items-center">
+<a class="text-[#E5E2E1] opacity-70 hover:bg-[#2A2A2A] hover:text-[#98CBFF] transition-colors px-3 py-1 rounded" href="#">Network</a>
+<a class="text-[#98CBFF] font-bold border-b-2 border-[#98CBFF] px-3 py-1" href="#">Security Reports</a>
+<a class="text-[#E5E2E1] opacity-70 hover:bg-[#2A2A2A] hover:text-[#98CBFF] transition-colors px-3 py-1 rounded" href="#">Assets</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-[#1C1B1B] flex items-center px-3 py-1.5 rounded gap-2">
+<span class="material-symbols-outlined text-[#98CBFF] text-lg">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs w-48 text-on-surface-variant" placeholder="Search Intel..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-[#98CBFF] hover:bg-[#2A2A2A] p-2 rounded transition-colors">sensors</button>
+<button class="material-symbols-outlined text-[#E5E2E1] hover:bg-[#2A2A2A] p-2 rounded transition-colors">account_circle</button>
+</div>
+</nav>
+<div class="flex pt-16 min-h-screen">
+<!-- SideNavBar -->
+<aside class="fixed left-0 w-64 h-[calc(100vh-64px)] bg-[#1C1B1B] flex flex-col border-r border-[#88919D]/15 shadow-[4px_0_24px_rgba(152,203,255,0.05)] z-40">
+<div class="p-6 border-b border-outline-variant/10">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-sm object-cover border border-secondary/20" data-alt="Digital glitch portrait of a futuristic cybersecurity operator with red neon highlights and tactical headset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAavzWp0diPYA4lYZsBPqxh1d1oHq_yzQHze55pHeXLIwnTBxHnAG8Jc4yixyQsseWrIdGwzCR7IIlHDe_HMfeK2-hDXadcbtSCqFN_usgSySnMrXDf5iFP1hRPjhE0hs5QD29fz9-Tb0uTs4KMkPTP8rEJG4wuqIyhgUCy1JqQYSalABiQcBOpZUm0wJTHWjzsRpDfuJxlZg2xtwG-NJqjO0v8tQkREUqwceBnasIggRi9XgDwuoaVvT_0Z07ywCbcRARK8lPh6wCm"/>
+<div>
+<p class="text-[10px] font-mono text-secondary tracking-widest uppercase">System Administrator Profile</p>
+<p class="font-headline font-bold text-sm text-on-surface">CodeSentinel Ops</p>
+<p class="text-[10px] text-primary opacity-70">Level 4 Clearance</p>
+</div>
+</div>
+</div>
+<div class="flex-1 py-6 space-y-1">
+<a class="flex items-center gap-4 px-6 py-3 text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all duration-200 font-['Inter'] text-xs uppercase tracking-widest font-semibold" href="#">
+<span class="material-symbols-outlined text-lg">dashboard</span> Dashboard
+                </a>
+<a class="flex items-center gap-4 px-6 py-3 text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all duration-200 font-['Inter'] text-xs uppercase tracking-widest font-semibold" href="#">
+<span class="material-symbols-outlined text-lg">radar</span> Active Scans
+                </a>
+<a class="flex items-center gap-4 px-6 py-3 bg-[#2A2A2A] text-[#98CBFF] border-l-4 border-[#98CBFF] transition-all duration-200 font-['Inter'] text-xs uppercase tracking-widest font-semibold" href="#">
+<span class="material-symbols-outlined text-lg">security</span> Red Team Reports
+                </a>
+<a class="flex items-center gap-4 px-6 py-3 text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all duration-200 font-['Inter'] text-xs uppercase tracking-widest font-semibold" href="#">
+<span class="material-symbols-outlined text-lg">shield</span> Blue Team Reports
+                </a>
+<a class="flex items-center gap-4 px-6 py-3 text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all duration-200 font-['Inter'] text-xs uppercase tracking-widest font-semibold" href="#">
+<span class="material-symbols-outlined text-lg">settings</span> Settings
+                </a>
+</div>
+<div class="p-6 border-t border-outline-variant/10 space-y-1">
+<a class="flex items-center gap-4 py-2 text-[#E5E2E1] opacity-60 hover:opacity-100 transition-all text-xs uppercase tracking-widest font-semibold" href="#">
+<span class="material-symbols-outlined text-lg">help_center</span> Support
+                </a>
+<a class="flex items-center gap-4 py-2 text-[#E5E2E1] opacity-60 hover:opacity-100 transition-all text-xs uppercase tracking-widest font-semibold" href="#">
+<span class="material-symbols-outlined text-lg">terminal</span> Logs
+                </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-64 p-8 bg-surface">
+<!-- Header Section with Asymmetry -->
+<div class="flex flex-col lg:flex-row justify-between items-start gap-8 mb-12">
+<div class="max-w-2xl">
+<div class="inline-flex items-center gap-2 px-2 py-1 bg-secondary-container/20 border border-secondary/20 rounded-sm mb-4">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="text-[10px] font-mono text-secondary uppercase font-bold tracking-[0.2em]">Offensive Mode Active</span>
+</div>
+<h1 class="font-headline text-5xl font-extrabold text-on-surface tracking-tighter mb-4 leading-none">
+                        Red Team <span class="text-secondary">Report</span>.
+                    </h1>
+<p class="font-body text-on-surface-variant text-lg leading-relaxed">
+                        Simulating advanced persistent threats (APT) against internal infrastructure. This document outlines the technical feasibility of systemic compromise via chained misconfigurations.
+                    </p>
+</div>
+<!-- KPI Bento Grid Small -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full lg:w-auto">
+<div class="bg-surface-container p-5 border-l-2 border-secondary glow-red flex flex-col justify-between h-32 w-full lg:w-44">
+<span class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Active Exploit Chains</span>
+<span class="text-4xl font-headline font-bold text-secondary">4</span>
+</div>
+<div class="bg-surface-container p-5 border-l-2 border-primary flex flex-col justify-between h-32 w-full lg:w-44">
+<span class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Critical Recon Intel</span>
+<span class="text-4xl font-headline font-bold text-primary">12</span>
+</div>
+<div class="bg-surface-container p-5 border-l-2 border-secondary flex flex-col justify-between h-32 w-full lg:w-44">
+<span class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Exposed Secrets</span>
+<span class="text-4xl font-headline font-bold text-secondary">8</span>
+</div>
+</div>
+</div>
+<!-- Attack Narrative (Tonal Brutalism) -->
+<section class="mb-12 bg-surface-container-low p-8 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-1/3 h-full opacity-10 pointer-events-none grayscale contrast-150 mix-blend-screen overflow-hidden">
+<img class="object-cover w-full h-full" data-alt="Abstract digital network topography with jagged lines and glitch effects in monochrome" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOsjxH7iKDmTTwlzQZhSJU1pwK9W49DykQbwAIcVKKshVBFYmd-4qgGnFDTBoLXUYwRmmwDxeXyLJ10e5RjpEjTb922wos4yK8D7qOGPVFOUiSTXJHfRuDAqjFxjXPWrbMoKGLoHOzXk8qUt3pr3McEBO7s-pkcqGZf-HVSmnjYmpygm-fnW9r0SjgEqUiefg3nTwWfHy066GkSyj9NKerbTzvMx60_oRyEI_fzm2CPe3HKzDFOCjyeGmdzgNEJxtpn8-pik_qKXEq"/>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<h2 class="font-headline text-2xl font-bold tracking-tight">Attack Narrative</h2>
+</div>
+<div class="max-w-4xl space-y-4">
+<p class="font-body text-on-surface-variant leading-relaxed">
+                            The breach begins with an <span class="text-secondary font-semibold">edge-node reconnaissance phase</span>, identifying a misconfigured public-facing Jenkins instance. By exploiting an unpatched CVE in the build-scripting engine, the attacker gains initial non-privileged access to the CI/CD environment.
+                        </p>
+<p class="font-body text-on-surface-variant leading-relaxed">
+                            Lateral movement is achieved through <span class="text-secondary font-semibold">environmental variable extraction</span>. We discovered high-privilege AWS access keys stored in plaintext within the container logs. This allows the attacker to pivot into the production VPC, bypassing 90% of perimeter defenses.
+                        </p>
+<div class="flex gap-4 mt-8">
+<button class="bg-secondary text-on-secondary px-6 py-2 font-headline font-bold text-sm tracking-tight rounded-sm hover:scale-95 transition-transform">Download Full Brief</button>
+<button class="bg-surface-container-high border border-outline/20 px-6 py-2 text-on-surface text-sm font-bold rounded-sm hover:bg-surface-container-highest transition-colors">View Timeline</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Tabs Section -->
+<div class="mb-8">
+<div class="flex border-b border-outline-variant/20 overflow-x-auto whitespace-nowrap scrollbar-hide">
+<button class="px-6 py-4 text-xs font-mono uppercase tracking-[0.2em] text-on-surface-variant opacity-50 hover:opacity-100 transition-opacity">Attack Narrative</button>
+<button class="px-6 py-4 text-xs font-mono uppercase tracking-[0.2em] text-on-surface-variant opacity-50 hover:opacity-100 transition-opacity">Recon Intel</button>
+<button class="px-6 py-4 text-xs font-mono uppercase tracking-[0.2em] text-secondary border-b-2 border-secondary font-bold">Simulations</button>
+<button class="px-6 py-4 text-xs font-mono uppercase tracking-[0.2em] text-on-surface-variant opacity-50 hover:opacity-100 transition-opacity">Chains</button>
+<button class="px-6 py-4 text-xs font-mono uppercase tracking-[0.2em] text-on-surface-variant opacity-50 hover:opacity-100 transition-opacity">Ghost Commits</button>
+</div>
+</div>
+<!-- Simulations Tab Content -->
+<div class="space-y-4">
+<div class="bg-surface-container-lowest p-1 border-l-2 border-secondary/40">
+<div class="bg-surface-container p-4 flex items-center justify-between group hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-6">
+<span class="text-secondary material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<div>
+<h3 class="font-headline font-bold text-on-surface">SQLi Injection Attack</h3>
+<div class="flex items-center gap-3 mt-1">
+<span class="text-[11px] font-mono bg-secondary-container/30 text-secondary px-2 py-0.5 rounded">Payload: ' OR 1=1 -- -</span>
+<span class="text-[11px] font-mono text-on-surface-variant opacity-50">Target: /api/v1/auth/login</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="text-right">
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Result</p>
+<p class="text-sm font-bold text-tertiary">SUCCESS</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">open_in_new</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-1 border-l-2 border-outline-variant/40">
+<div class="bg-surface-container p-4 flex items-center justify-between group hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-6">
+<span class="text-on-surface-variant material-symbols-outlined text-xl">folder_zip</span>
+<div>
+<h3 class="font-headline font-bold text-on-surface">Directory Traversal</h3>
+<div class="flex items-center gap-3 mt-1">
+<span class="text-[11px] font-mono bg-surface-container-highest text-on-surface-variant px-2 py-0.5 rounded">Payload: ../../../etc/passwd</span>
+<span class="text-[11px] font-mono text-on-surface-variant opacity-50">Target: /cdn/assets?path=</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="text-right">
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Result</p>
+<p class="text-sm font-bold text-error">FILTERED</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">open_in_new</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-1 border-l-2 border-secondary/40">
+<div class="bg-surface-container p-4 flex items-center justify-between group hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-6">
+<span class="text-secondary material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">key</span>
+<div>
+<h3 class="font-headline font-bold text-on-surface">JWT Secret Bruteforce</h3>
+<div class="flex items-center gap-3 mt-1">
+<span class="text-[11px] font-mono bg-secondary-container/30 text-secondary px-2 py-0.5 rounded">Payload: HS256 Dictionary Attack</span>
+<span class="text-[11px] font-mono text-on-surface-variant opacity-50">Target: Identity Microservice</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="text-right">
+<p class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Result</p>
+<p class="text-sm font-bold text-tertiary">SUCCESS</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">open_in_new</span>
+</div>
+</div>
+</div>
+<!-- Terminal-style Log Output (Asymmetric/Tactical) -->
+<div class="mt-12">
+<div class="flex items-center justify-between px-4 py-2 bg-surface-container-highest rounded-t-sm">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary/50"></div>
+<span class="text-[10px] font-mono text-on-surface-variant uppercase tracking-widest">Live Attack Simulation Stream</span>
+</div>
+<span class="text-[10px] font-mono text-secondary">T-MINUS 00:04:12</span>
+</div>
+<div class="bg-surface-container-lowest p-6 font-mono text-[11px] leading-relaxed text-primary h-64 overflow-y-auto border-x border-b border-outline-variant/10 scanline">
+<p class="opacity-50">[14:22:01] INITIALIZING PAYLOAD SUITE: OBBS_X_04</p>
+<p>[14:22:04] <span class="text-secondary">TARGET IDENTIFIED: 192.168.1.104:8080</span></p>
+<p>[14:22:05] ATTEMPTING PROTOCOL DOWNGRADE...</p>
+<p>[14:22:08] SUCCESS: PROTOCOL SET TO HTTP/1.0</p>
+<p>[14:22:12] INJECTING SHELLCODE (BASE64_ENCODED)...</p>
+<p class="text-tertiary">[14:22:15] HANDSHAKE ESTABLISHED. REVERSE SHELL ACTIVE ON PORT 4444.</p>
+<p class="text-on-surface-variant opacity-40 mt-4 animate-pulse">_ EXECUTION_PENDING_NEXT_COMMAND</p>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Red Team Contextual Backdrop Blur Asset -->
+<div class="fixed bottom-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
+<div class="fixed top-20 left-64 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none -z-10"></div>
+</body></html>

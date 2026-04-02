@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CodeSentinel | Blue Team Report</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-background": "#e5e2e1",
+                        "secondary": "#ffb4aa",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-error": "#690005",
+                        "on-surface": "#e5e2e1",
+                        "on-primary-fixed": "#001d33",
+                        "surface-dim": "#131313",
+                        "primary": "#98cbff",
+                        "secondary-fixed-dim": "#ffb4aa",
+                        "inverse-on-surface": "#313030",
+                        "tertiary-container": "#20b500",
+                        "on-tertiary-fixed-variant": "#095300",
+                        "surface-container-highest": "#353534",
+                        "surface-tint": "#98cbff",
+                        "surface-container": "#201f1f",
+                        "surface-container-low": "#1c1b1b",
+                        "on-secondary-fixed-variant": "#930005",
+                        "inverse-surface": "#e5e2e1",
+                        "inverse-primary": "#00629d",
+                        "primary-container": "#00a3ff",
+                        "on-surface-variant": "#bec7d4",
+                        "tertiary-fixed-dim": "#2ae500",
+                        "on-primary-fixed-variant": "#004a77",
+                        "on-tertiary": "#053900",
+                        "on-tertiary-fixed": "#022100",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-container": "#00375a",
+                        "surface-variant": "#353534",
+                        "surface-container-high": "#2a2a2a",
+                        "tertiary-fixed": "#79ff5b",
+                        "outline": "#88919d",
+                        "surface": "#131313",
+                        "on-tertiary-container": "#053d00",
+                        "on-secondary-fixed": "#410001",
+                        "secondary-container": "#c5020b",
+                        "outline-variant": "#3f4852",
+                        "surface-bright": "#3a3939",
+                        "error": "#ffb4ab",
+                        "background": "#131313",
+                        "on-secondary-container": "#ffd2cc",
+                        "primary-fixed": "#cfe5ff",
+                        "primary-fixed-dim": "#98cbff",
+                        "tertiary": "#2ae500",
+                        "error-container": "#93000a",
+                        "on-secondary": "#690003",
+                        "on-primary": "#003354",
+                        "secondary-fixed": "#ffdad5"
+                    },
+                    fontFamily: {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["JetBrains Mono"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .security-gauge {
+            background: conic-gradient(from 180deg, #c5020b 0%, #c5020b 42%, #1c1b1b 42%, #1c1b1b 100%);
+        }
+        .glow-error {
+            box-shadow: 0 0 15px rgba(197, 2, 11, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container overflow-hidden h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-[#131313] text-[#98CBFF] font-['Space_Grotesk'] text-sm tracking-tight flex justify-between items-center w-full px-6 py-3 h-16 z-50 fixed top-0">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-[#98CBFF]">CodeSentinel</span>
+<div class="hidden md:flex items-center gap-2 bg-[#1C1B1B] px-3 py-1.5 rounded-sm border border-[#88919D]/10">
+<span class="material-symbols-outlined text-xs">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs w-64 placeholder:opacity-40" placeholder="Global Scan Search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:bg-[#2A2A2A] hover:text-[#98CBFF] transition-colors p-2 rounded-sm Active: scale-95 duration-75">
+<span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+</button>
+<button class="hover:bg-[#2A2A2A] hover:text-[#98CBFF] transition-colors p-2 rounded-sm Active: scale-95 duration-75">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<div class="flex flex-1 pt-16 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="bg-[#1C1B1B] text-[#98CBFF] font-['Inter'] text-xs uppercase tracking-widest font-semibold flex flex-col h-full border-r border-[#88919D]/15 w-64 fixed left-0 shadow-[4px_0_24px_rgba(152,203,255,0.05)]">
+<div class="p-6 mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-sm bg-surface-container-highest flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-primary">security</span>
+</div>
+<div>
+<p class="text-[10px] text-on-surface opacity-60 normal-case tracking-normal">CodeSentinel Ops</p>
+<p class="text-primary font-bold tracking-tight text-xs">Level 4 Clearance</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all duration-200 ease-in-out rounded-sm" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all duration-200 ease-in-out rounded-sm" href="#">
+<span class="material-symbols-outlined" data-icon="radar">radar</span>
+<span>Active Scans</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all duration-200 ease-in-out rounded-sm" href="#">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span>Red Team Reports</span>
+</a>
+<a class="bg-[#2A2A2A] text-[#98CBFF] border-l-4 border-[#98CBFF] flex items-center gap-3 px-4 py-3 transition-all duration-200 ease-in-out rounded-sm" href="#">
+<span class="material-symbols-outlined" data-icon="shield">shield</span>
+<span>Blue Team Reports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#E5E2E1] opacity-60 hover:bg-[#201F1F] hover:opacity-100 transition-all duration-200 ease-in-out rounded-sm" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="mt-auto p-4 space-y-1 border-t border-[#88919D]/10">
+<a class="flex items-center gap-3 px-4 py-2 text-[#E5E2E1] opacity-60 hover:opacity-100 transition-all" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="help_center">help_center</span>
+<span class="text-[10px]">Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-[#E5E2E1] opacity-60 hover:opacity-100 transition-all" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="terminal">terminal</span>
+<span class="text-[10px]">Logs</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 overflow-y-auto bg-surface p-8 scroll-smooth">
+<div class="max-w-7xl mx-auto space-y-8">
+<!-- Tactical Header -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Security Score Gauge -->
+<div class="col-span-12 lg:col-span-3 bg-surface-container-low p-6 rounded-sm flex flex-col items-center justify-center relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-1 bg-secondary-container/30"></div>
+<div class="relative w-32 h-32 rounded-full security-gauge flex items-center justify-center">
+<div class="w-28 h-28 bg-surface-container-low rounded-full flex flex-col items-center justify-center">
+<span class="text-4xl font-headline font-bold text-secondary">42</span>
+<span class="text-[10px] text-on-surface/40 font-mono">/100</span>
+</div>
+</div>
+<p class="mt-4 font-headline text-xs font-bold text-secondary-container tracking-widest uppercase">CRITICAL VULNERABILITY</p>
+</div>
+<!-- KPIs -->
+<div class="col-span-12 lg:col-span-5 grid grid-cols-2 gap-4">
+<div class="bg-surface-container p-6 rounded-sm border-l-4 border-secondary-container">
+<p class="text-xs text-on-surface/60 font-label">Critical Findings</p>
+<p class="text-4xl font-headline font-bold text-on-surface mt-2">15</p>
+<div class="mt-4 flex items-center gap-2 text-[10px] text-secondary">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+4 since last scan</span>
+</div>
+</div>
+<div class="bg-surface-container p-6 rounded-sm border-l-4 border-primary">
+<p class="text-xs text-on-surface/60 font-label">Exploit Chains Blocked</p>
+<div class="flex items-baseline gap-2 mt-2">
+<p class="text-4xl font-headline font-bold text-on-surface">2</p>
+<p class="text-xl font-headline font-medium text-on-surface/30">/ 6</p>
+</div>
+<div class="mt-4 w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-1/3"></div>
+</div>
+</div>
+</div>
+<!-- Threat Actor Profile -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-low p-6 rounded-sm relative border border-outline-variant/10">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-[10px] text-primary font-mono uppercase tracking-[0.2em]">Threat Actor ID</p>
+<h3 class="text-xl font-headline font-bold text-on-surface mt-1 uppercase">ShadowBroker Clone</h3>
+</div>
+<div class="bg-secondary-container/10 px-3 py-1 rounded-sm border border-secondary-container/40">
+<p class="text-[10px] font-mono text-secondary">92% MATCH</p>
+</div>
+</div>
+<div class="mt-6 flex gap-4">
+<div class="flex-1 bg-surface-container-highest/30 p-3 rounded-sm">
+<p class="text-[10px] opacity-40 uppercase">Origin</p>
+<p class="text-xs font-mono">X-NORTH-SERVER-04</p>
+</div>
+<div class="flex-1 bg-surface-container-highest/30 p-3 rounded-sm">
+<p class="text-[10px] opacity-40 uppercase">Method</p>
+<p class="text-xs font-mono">POLYMORPHIC RCE</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Tabs & Controls -->
+<div class="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-outline-variant/20 pb-0">
+<div class="flex gap-8 overflow-x-auto no-scrollbar w-full md:w-auto">
+<button class="pb-4 text-xs font-headline font-bold text-on-surface/40 hover:text-on-surface transition-colors uppercase tracking-widest whitespace-nowrap">Overview</button>
+<button class="pb-4 text-xs font-headline font-bold text-primary border-b-2 border-primary uppercase tracking-widest whitespace-nowrap">Findings</button>
+<button class="pb-4 text-xs font-headline font-bold text-on-surface/40 hover:text-on-surface transition-colors uppercase tracking-widest whitespace-nowrap">Chains</button>
+<button class="pb-4 text-xs font-headline font-bold text-on-surface/40 hover:text-on-surface transition-colors uppercase tracking-widest whitespace-nowrap">Patches</button>
+<button class="pb-4 text-xs font-headline font-bold text-on-surface/40 hover:text-on-surface transition-colors uppercase tracking-widest whitespace-nowrap">Attack Graph</button>
+</div>
+<div class="pb-4 w-full md:w-auto">
+<button class="w-full md:w-auto bg-primary text-on-primary-container font-headline font-bold text-xs px-6 py-3 rounded-sm flex items-center justify-center gap-3 hover:brightness-110 active:scale-95 transition-all glow-primary shadow-[0_0_20px_rgba(152,203,255,0.2)]">
+<span class="material-symbols-outlined text-sm" data-icon="terminal">terminal</span>
+                            GENERATE GITHUB PULL REQUEST
+                        </button>
+</div>
+</div>
+<!-- Findings List -->
+<div class="space-y-4">
+<!-- Finding Card 1 -->
+<div class="group bg-surface-container-low hover:bg-surface-container-high transition-colors p-5 rounded-sm border-l-4 border-secondary-container flex flex-col md:flex-row items-start md:items-center gap-6">
+<div class="flex-shrink-0 bg-secondary-container/10 p-3 rounded-sm border border-secondary-container/20">
+<span class="material-symbols-outlined text-secondary" data-icon="bug_report" data-weight="fill">bug_report</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-3 mb-1">
+<span class="bg-secondary-container text-on-error px-2 py-0.5 text-[9px] font-mono font-bold rounded-sm">CRITICAL</span>
+<span class="text-xs text-on-surface/40 font-mono">CVE-2024-8831</span>
+</div>
+<h4 class="text-on-surface font-headline font-bold text-lg group-hover:text-primary transition-colors">Unauthenticated RCE in /upload</h4>
+<p class="text-sm text-on-surface-variant line-clamp-1 mt-1 font-body">The file upload endpoint fails to validate multipart form boundaries allowing arbitrary memory corruption.</p>
+</div>
+<div class="flex-shrink-0 flex items-center gap-6">
+<div class="text-right">
+<p class="text-[10px] text-on-surface/40 font-mono uppercase">Detected</p>
+<p class="text-xs font-mono text-on-surface">2m 44s AGO</p>
+</div>
+<button class="bg-surface-container-highest p-2 rounded-sm hover:text-primary transition-all">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Finding Card 2 -->
+<div class="group bg-surface-container-low hover:bg-surface-container-high transition-colors p-5 rounded-sm border-l-4 border-secondary-container flex flex-col md:flex-row items-start md:items-center gap-6">
+<div class="flex-shrink-0 bg-secondary-container/10 p-3 rounded-sm border border-secondary-container/20">
+<span class="material-symbols-outlined text-secondary" data-icon="database" data-weight="fill">database</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-3 mb-1">
+<span class="bg-secondary-container text-on-error px-2 py-0.5 text-[9px] font-mono font-bold rounded-sm">CRITICAL</span>
+<span class="text-xs text-on-surface/40 font-mono">CWE-89</span>
+</div>
+<h4 class="text-on-surface font-headline font-bold text-lg group-hover:text-primary transition-colors">SQL Injection via Header: X-Auth-Key</h4>
+<p class="text-sm text-on-surface-variant line-clamp-1 mt-1 font-body">Input from X-Auth-Key header is directly concatenated into the production PostgreSQL query string.</p>
+</div>
+<div class="flex-shrink-0 flex items-center gap-6">
+<div class="text-right">
+<p class="text-[10px] text-on-surface/40 font-mono uppercase">Detected</p>
+<p class="text-xs font-mono text-on-surface">14m 12s AGO</p>
+</div>
+<button class="bg-surface-container-highest p-2 rounded-sm hover:text-primary transition-all">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Finding Card 3 -->
+<div class="group bg-surface-container-low hover:bg-surface-container-high transition-colors p-5 rounded-sm border-l-4 border-primary/40 flex flex-col md:flex-row items-start md:items-center gap-6 opacity-80">
+<div class="flex-shrink-0 bg-primary/10 p-3 rounded-sm border border-primary/20">
+<span class="material-symbols-outlined text-primary" data-icon="lock_open">lock_open</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-3 mb-1">
+<span class="bg-on-primary-fixed-variant text-primary-fixed px-2 py-0.5 text-[9px] font-mono font-bold rounded-sm uppercase">Medium</span>
+<span class="text-xs text-on-surface/40 font-mono">INTERNAL-S09</span>
+</div>
+<h4 class="text-on-surface font-headline font-bold text-lg group-hover:text-primary transition-colors">Insecure Direct Object Reference (IDOR)</h4>
+<p class="text-sm text-on-surface-variant line-clamp-1 mt-1 font-body">Users can access other profile data by modifying the 'user_id' parameter in /api/v1/profile/details.</p>
+</div>
+<div class="flex-shrink-0 flex items-center gap-6">
+<div class="text-right">
+<p class="text-[10px] text-on-surface/40 font-mono uppercase">Detected</p>
+<p class="text-xs font-mono text-on-surface">1h 04m AGO</p>
+</div>
+<button class="bg-surface-container-highest p-2 rounded-sm hover:text-primary transition-all">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Summary Asymmetric -->
+<div class="grid grid-cols-12 gap-6 mt-12 pb-12">
+<div class="col-span-12 md:col-span-8 bg-surface-container-lowest p-6 rounded-sm border border-outline-variant/10 font-mono text-[11px] leading-relaxed text-on-surface/60 overflow-hidden">
+<div class="flex items-center gap-2 text-tertiary mb-3 uppercase tracking-widest font-bold">
+<span class="material-symbols-outlined text-sm">terminal</span>
+                            Live System Log Trace
+                        </div>
+<p class="mb-1"><span class="text-on-surface/20">[14:22:01]</span> <span class="text-primary">INFO:</span> Scanning node cluster US-EAST-01...</p>
+<p class="mb-1"><span class="text-on-surface/20">[14:22:05]</span> <span class="text-secondary">WARN:</span> Found suspicious outbound packet to <span class="underline">104.22.1.201</span></p>
+<p class="mb-1"><span class="text-on-surface/20">[14:22:08]</span> <span class="text-tertiary">SUCCESS:</span> IPS blocked malicious string match in request body.</p>
+<p class="mb-1"><span class="text-on-surface/20">[14:22:15]</span> <span class="text-primary">INFO:</span> Blue Team automated report compiling...</p>
+<div class="w-2 h-4 bg-primary inline-block animate-pulse ml-1 align-middle"></div>
+</div>
+<div class="col-span-12 md:col-span-4 flex flex-col justify-between p-6 bg-gradient-to-br from-primary/10 to-transparent rounded-sm border border-primary/20">
+<div>
+<h5 class="font-headline font-bold text-on-surface uppercase tracking-tighter">Defense Readiness</h5>
+<p class="text-xs text-on-surface/60 mt-1">Based on current security findings and patch latency.</p>
+</div>
+<div class="mt-8">
+<div class="flex justify-between text-[10px] font-mono mb-2">
+<span>SYSTEM UPTIME</span>
+<span class="text-tertiary">99.98%</span>
+</div>
+<div class="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full w-[99%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
