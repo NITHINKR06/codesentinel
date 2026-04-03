@@ -338,6 +338,64 @@ export default function ReportPage() {
                       </div>
                     )}
 
+                    {/* Payload + HTTP details */}
+                    {sim.observations && sim.observations.length > 0 && (
+                      <div className="mt-4 space-y-3">
+                        {sim.observations.map((obs, oi) => {
+                          const req = (obs.request || {}) as any
+                          const res = (obs.result || {}) as any
+                          const url = typeof res.url === "string" ? res.url : ""
+                          const status = typeof res.status_code === "number" ? res.status_code : undefined
+                          const body = typeof res.body === "string" ? res.body : ""
+                          const method = typeof req.method === "string" ? req.method : ""
+                          const path = typeof req.path === "string" ? req.path : ""
+                          const paramName = typeof req.param_name === "string" ? req.param_name : ""
+                          const payload = typeof req.payload === "string" ? req.payload : ""
+                          const command = typeof req.command === "string" ? req.command : ""
+
+                          return (
+                            <div key={`${obs.step}_${oi}`} className="bg-surface-container-high rounded p-3 border border-outline-variant/10">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="text-[10px] font-mono text-on-surface/70 uppercase tracking-widest">
+                                  Step {obs.step}: {obs.action}
+                                  {obs.payload_name ? ` — ${obs.payload_name}` : ""}
+                                </div>
+                                {typeof status === "number" && (
+                                  <div className="text-[10px] font-mono text-on-surface/60">
+                                    HTTP {status}
+                                  </div>
+                                )}
+                              </div>
+
+                              {url && (
+                                <div className="mt-2 text-[10px] font-mono text-on-surface/60 break-all">
+                                  {method ? `${method} ` : ""}{url}{path && !url.endsWith(path) ? ` (${path})` : ""}
+                                </div>
+                              )}
+
+                              {command && (
+                                <div className="mt-2 text-[10px] font-mono text-on-surface/60 break-all">
+                                  Command: <span className="text-on-surface">{command}</span>
+                                </div>
+                              )}
+
+                              {(payload || paramName) && (
+                                <div className="mt-2 text-[10px] font-mono text-on-surface/60 break-all">
+                                  Payload{paramName ? ` (${paramName})` : ""}: <span className="text-on-surface">{payload || "(empty)"}</span>
+                                </div>
+                              )}
+
+                              {body && (
+                                <div className="mt-2 text-xs text-on-surface-variant whitespace-pre-wrap">
+                                  {body.slice(0, 500)}{body.length > 500 ? "…" : ""}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+
                     <div className="mt-3 text-xs text-on-surface-variant whitespace-pre-wrap bg-surface-container-high rounded p-3 border border-outline-variant/10">
                       {sim.confirmation_message || sim.evidence || "No evidence captured."}
                     </div>

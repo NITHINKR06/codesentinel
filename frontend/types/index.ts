@@ -83,6 +83,7 @@ export interface SimulationObservation {
   step: number
   action: string
   payload_name: string
+  request?: Record<string, unknown>
   result: Record<string, unknown>
   verdict: Record<string, unknown>
 }
