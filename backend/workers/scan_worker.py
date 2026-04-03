@@ -69,6 +69,7 @@ def run_scan_task(self, scan_id: str, zip_path: str = None):
             emit(scan_id, "scanning", "Running vulnerability scanner...", progress=15)
 
             from engines.red.ast_scanner import scan_files
+            from engines.red.file_filters import filter_findings
             findings = scan_files(files)
             for i, f in enumerate(findings):
                 f["id"] = f"finding_{i+1}"
@@ -83,6 +84,10 @@ def run_scan_task(self, scan_id: str, zip_path: str = None):
                     findings.extend(live_findings)
                 except Exception as e:
                     log.warning("Live probe failed", error=str(e))
+
+            # Safety: never allow generated lockfiles/minified assets to fan out into
+            # expensive downstream LLM phases (PoC/patches), even if scanners emit them.
+            findings = filter_findings(findings)
 
             emit(scan_id, "scanning", f"Found {len(findings)} vulnerabilities",
                  {"count": len(findings)}, progress=25)
@@ -132,7 +137,14 @@ def run_scan_task(self, scan_id: str, zip_path: str = None):
                 from engines.red.poc_generator import PoCGenerator
                 poc_gen = PoCGenerator()
                 critical_findings = [f for f in findings if f.get("severity") in ("critical", "high")]
-                for finding in critical_findings[:5]:
+                seen_poc_keys = set()
+                for finding in critical_findings:
+                    poc_key = (finding.get("file_path", ""), finding.get("vuln_type", ""))
+                    if poc_key in seen_poc_keys:
+                        continue
+                    seen_poc_keys.add(poc_key)
+                    if len(seen_poc_keys) > 5:
+                        break
                     poc = poc_gen.generate_poc(finding)
                     if poc:
                         finding["poc_exploit"] = poc

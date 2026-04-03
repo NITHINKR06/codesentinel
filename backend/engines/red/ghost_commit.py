@@ -4,6 +4,8 @@ from typing import List, Dict
 import structlog
 import git
 
+from engines.red.file_filters import should_skip_path
+
 log = structlog.get_logger()
 
 SECRET_PATTERNS = [
@@ -82,6 +84,9 @@ def scan_git_history(repo_path: str) -> List[Dict]:
             continue
 
         for diff in diffs:
+            diff_path = diff.b_path or diff.a_path or ""
+            if should_skip_path(diff_path):
+                continue
             try:
                 patch_text = diff.diff.decode("utf-8", errors="ignore")
             except Exception:
@@ -108,7 +113,7 @@ def scan_git_history(repo_path: str) -> List[Dict]:
                     "commit_message": commit.message.strip()[:100],
                     "author": str(commit.author),
                     "committed_at": commit.committed_datetime.isoformat(),
-                    "file": diff.b_path or diff.a_path,
+                    "file": diff_path,
                     "secret_type": hit["pattern_label"],
                     "secret_preview": hit["match"],
                     "still_present": still_present,

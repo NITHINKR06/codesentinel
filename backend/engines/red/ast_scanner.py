@@ -3,12 +3,26 @@ import re
 from typing import Dict, List
 
 import structlog
+from pathlib import Path
 
 from engines.red.taint_engine import scan_python_file
+from engines.red.file_filters import should_skip_file_info
 
 log = structlog.get_logger()
 
 SEVERITY_WEIGHTS = {"critical": 40, "high": 20, "medium": 10, "low": 5}
+
+SKIP_BASENAMES = {
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "pnpm-lock.yml",
+    "bun.lockb",
+    "composer.lock",
+    "poetry.lock",
+    "go.sum",
+    "cargo.lock",
+}
 
 PATTERNS = {
     "sqli": {
@@ -158,6 +172,11 @@ def _entropy(value: str) -> float:
     return -sum((count / len(value)) * math.log2(count / len(value)) for count in frequency.values())
 
 
+def _should_skip_file(file_info: Dict) -> bool:
+    # Backwards-compatible wrapper around shared filter logic.
+    return should_skip_file_info(file_info)
+
+
 def scan_file(file_info: Dict) -> List[Dict]:
     content = file_info["content"]
     path = file_info["path"]
@@ -217,6 +236,9 @@ def scan_file(file_info: Dict) -> List[Dict]:
 def scan_files(files: List[Dict]) -> List[Dict]:
     all_findings = []
     for file_info in files:
+        if _should_skip_file(file_info):
+            log.info("Skipping generated/lock file", path=file_info.get("path"))
+            continue
         extension = file_info.get("extension", "").lower()
         if extension in (".jpg", ".png", ".gif", ".ico", ".woff"):
             continue
