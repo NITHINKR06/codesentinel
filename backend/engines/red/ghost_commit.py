@@ -73,7 +73,10 @@ def scan_git_history(repo_path: str) -> List[Dict]:
     commits = list(repo.iter_commits("HEAD", max_count=200))
     log.info("Scanning git history", commits=len(commits))
 
-    seen_hashes = set()
+    # Dedupe across commits: the same secret often gets re-committed multiple times
+    # (rebases, cherry-picks, merges, or different authors). For reporting, we keep
+    # one entry per unique (file, secret_type, secret_preview).
+    seen_fingerprints = set()
 
     for commit in commits:
         if not commit.parents:
@@ -100,10 +103,10 @@ def scan_git_history(repo_path: str) -> List[Dict]:
 
             hits = _scan_content_for_secrets(added_lines)
             for hit in hits:
-                fingerprint = f"{commit.hexsha[:8]}_{hit['pattern_label']}_{hit['match'][:20]}"
-                if fingerprint in seen_hashes:
+                fingerprint = f"{diff_path}_{hit['pattern_label']}_{hit['match'][:40]}"
+                if fingerprint in seen_fingerprints:
                     continue
-                seen_hashes.add(fingerprint)
+                seen_fingerprints.add(fingerprint)
 
                 # Check if this secret still exists in HEAD
                 still_present = _secret_in_head(repo, hit["match"][:30])

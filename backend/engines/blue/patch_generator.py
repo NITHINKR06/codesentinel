@@ -163,9 +163,25 @@ class PatchGenerator:
         import time
         file_map = {f["path"]: f["content"] for f in files}
         patches = []
-        # Cap the number of patches to prevent massive rate limiting on large repos
-        critical_high = [f for f in findings if f.get("severity") in ("critical", "high")]
-        for finding in critical_high[:15]: # process max 15 to stay within strict limits
+        # Cap + dedupe to prevent massive rate limiting on large repos.
+        # We intentionally avoid patching high-entropy "secrets" because they are often
+        # lockfile/hash noise and not safely auto-fixable.
+        skip_vuln_types = {"high_entropy_secret"}
+        critical_high = [
+            f
+            for f in findings
+            if f.get("severity") in ("critical", "high") and f.get("vuln_type") not in skip_vuln_types
+        ]
+
+        seen_keys = set()
+        max_patches = 8
+        for finding in critical_high:
+            key = (finding.get("file_path", ""), finding.get("vuln_type", ""))
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            if len(seen_keys) > max_patches:
+                break
             file_content = file_map.get(finding.get("file_path", ""), "")
             if not file_content:
                 continue

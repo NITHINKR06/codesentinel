@@ -32,11 +32,11 @@ def main():
     commands = [
         {
             "name": "Celery",
-            "cmd": "cd backend && source /home/nithin/Documents/codesentinel/backend/venv/bin/activate.fish && celery -A workers.celery_app worker --loglevel=info --concurrency=1"
+            "cmd": "cd backend && test -d venv; or /usr/bin/python3.11 -m venv venv; and source /home/nithin/Documents/codesentinel/backend/venv/bin/activate.fish && celery -A workers.celery_app worker --loglevel=info --concurrency=1"
         },
         {
             "name": "Backend",
-            "cmd": f"cd backend && python3 -m venv venv && source /home/nithin/Documents/codesentinel/backend/venv/bin/activate.fish && uvicorn main:app --reload --port {backend_port}"
+            "cmd": f"cd backend && test -d venv; or /usr/bin/python3.11 -m venv venv; and source /home/nithin/Documents/codesentinel/backend/venv/bin/activate.fish && uvicorn main:app --reload --port {backend_port}"
         },
         {
             "name": "Frontend",

@@ -136,7 +136,11 @@ def run_scan_task(self, scan_id: str, zip_path: str = None):
             try:
                 from engines.red.poc_generator import PoCGenerator
                 poc_gen = PoCGenerator()
-                critical_findings = [f for f in findings if f.get("severity") in ("critical", "high")]
+                skip_vuln_types = {"high_entropy_secret"}
+                critical_findings = [
+                    f for f in findings
+                    if f.get("severity") in ("critical", "high") and f.get("vuln_type") not in skip_vuln_types
+                ]
                 seen_poc_keys = set()
                 for finding in critical_findings:
                     poc_key = (finding.get("file_path", ""), finding.get("vuln_type", ""))
