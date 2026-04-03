@@ -18,7 +18,7 @@ export default function ReportPage() {
   const params = useParams()
   const scanId = params.id as string
   const [report, setReport] = useState<ScanReport | null>(null)
-  const [activeTab, setActiveTab] = useState<"overview" | "findings" | "chains" | "patches" | "graph">("overview")
+  const [activeTab, setActiveTab] = useState<"overview" | "findings" | "chains" | "patches" | "simulations" | "graph">("overview")
   const [prLoading, setPrLoading] = useState(false)
   const [prUrl, setPrUrl] = useState("")
   const [prError, setPrError] = useState("")
@@ -63,11 +63,15 @@ export default function ReportPage() {
     )
   }
 
+  const simulations = report.attack_graph?.simulations || []
+  const confirmedCount = simulations.filter((s) => s.confirmed).length
+
   const TABS = [
     { key: "overview", label: "Overview" },
     { key: "findings", label: `Findings (${report.total_findings})` },
     { key: "chains", label: `Chains (${report.chains?.length || 0})` },
     { key: "patches", label: `Patches (${report.patches?.length || 0})` },
+    { key: "simulations", label: `Simulations (${confirmedCount}/${simulations.length})` },
     { key: "graph", label: "Attack Graph" },
   ] as const
 
@@ -296,6 +300,62 @@ export default function ReportPage() {
                 {report.patches?.map((patch: any, i: number) => (
                   <PatchViewer key={i} patch={patch} />
                 ))}
+              </div>
+            )}
+
+            {/* Simulations */}
+            {activeTab === "simulations" && (
+              <div className="space-y-4">
+                {simulations.map((sim, i) => (
+                  <div
+                    key={`${sim.vuln_type}_${sim.file_path}_${i}`}
+                    className="bg-surface-container-low p-5 rounded-sm border border-outline-variant/20"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="text-sm font-headline font-bold text-on-surface uppercase tracking-widest">
+                          {sim.vuln_type}
+                        </div>
+                        <div className="text-xs text-on-surface/60 font-mono break-all mt-1">
+                          {sim.file_path}
+                        </div>
+                      </div>
+                      <div
+                        className={
+                          "shrink-0 text-[10px] font-mono uppercase tracking-widest px-3 py-1 rounded-sm border " +
+                          (sim.confirmed
+                            ? "bg-tertiary/15 text-tertiary border-tertiary/40"
+                            : "bg-surface-container-high text-on-surface/60 border-outline/20")
+                        }
+                      >
+                        {sim.confirmed ? "CONFIRMED" : "INCONCLUSIVE"}
+                      </div>
+                    </div>
+
+                    {sim.target_url && (
+                      <div className="text-[10px] text-on-surface/60 font-mono mt-3">
+                        Target: <span className="text-on-surface">{sim.target_url}</span>
+                      </div>
+                    )}
+
+                    <div className="mt-3 text-xs text-on-surface-variant whitespace-pre-wrap bg-surface-container-high rounded p-3 border border-outline-variant/10">
+                      {sim.confirmation_message || sim.evidence || "No evidence captured."}
+                    </div>
+
+                    {sim.simulation_notes && (
+                      <div className="mt-2 text-[10px] text-on-surface/50 font-mono">
+                        {sim.simulation_notes}
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {simulations.length === 0 && (
+                  <div className="text-on-surface-variant text-sm">
+                    No simulations were run for this scan. The sandbox only simulates a subset of vuln types
+                    (e.g. SQLi/XSS/SSRF/RCE/path traversal) and only for high/critical findings.
+                  </div>
+                )}
               </div>
             )}
 

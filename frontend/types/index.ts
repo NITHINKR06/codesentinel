@@ -79,9 +79,37 @@ export interface GraphEdge {
   target: string
 }
 
+export interface SimulationObservation {
+  step: number
+  action: string
+  payload_name: string
+  result: Record<string, unknown>
+  verdict: Record<string, unknown>
+}
+
+export interface SimulationResult {
+  vuln_type: string
+  file_path: string
+  confirmed: boolean
+  evidence?: string
+  payload_name?: string
+  target_id?: string
+  target_url?: string
+  observations?: SimulationObservation[]
+  confirmation_message?: string
+  executed?: boolean
+  output?: string
+  duration_ms?: number
+  simulation_notes?: string
+}
+
 export interface AttackGraph {
   nodes: GraphNode[]
   edges: GraphEdge[]
+  // The backend stores extra metadata in the same JSON blob.
+  simulations?: SimulationResult[]
+  narrative?: string
+  recon?: Record<string, unknown>
 }
 
 export interface ScanReport {
