@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
         try:
-            loop.add_signal_handler(sig, lambda: asyncio.create_task(app.shutdown()))
+            loop.add_signal_handler(sig, lambda: asyncio.create_task(shutdown()))
         except NotImplementedError:
             # Fallback for Windows or systems where add_signal_handler is not available
             pass
