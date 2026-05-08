@@ -2,6 +2,20 @@ import subprocess
 import time
 import sys
 import socket
+import os
+import shutil
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parent
+BACKEND_DIR = ROOT / "backend"
+BACKEND_VENV = BACKEND_DIR / "venv"
+BACKEND_PYTHON = BACKEND_VENV / "bin" / "python"
+BACKEND_REQUIREMENTS = BACKEND_DIR / "requirements.txt"
+BACKEND_SETUP_STAMP = BACKEND_VENV / ".requirements-installed"
+
+FRONTEND_DIR = ROOT / "frontend"
+FRONTEND_SETUP_STAMP = FRONTEND_DIR / ".node_modules-installed"
 
 
 def _is_port_free(port: int, host: str = "127.0.0.1") -> bool:
@@ -21,26 +35,78 @@ def _pick_free_port(preferred: int, host: str = "127.0.0.1", max_tries: int = 20
             return candidate
     raise RuntimeError(f"Could not find a free port starting at {preferred}")
 
+
+def _run_checked(command: list[str], cwd: Path) -> None:
+    subprocess.run(command, cwd=cwd, check=True)
+
+
+def _is_stale(marker: Path, dependency: Path) -> bool:
+    return not marker.exists() or marker.stat().st_mtime < dependency.stat().st_mtime
+
+
+def _ensure_backend_environment() -> None:
+    if not BACKEND_PYTHON.exists():
+        print("Creating backend virtual environment...")
+        _run_checked([sys.executable, "-m", "venv", str(BACKEND_VENV)], cwd=BACKEND_DIR)
+
+    if _is_stale(BACKEND_SETUP_STAMP, BACKEND_REQUIREMENTS):
+        print("Installing backend Python dependencies...")
+        _run_checked([str(BACKEND_PYTHON), "-m", "pip", "install", "-r", str(BACKEND_REQUIREMENTS)], cwd=BACKEND_DIR)
+        BACKEND_SETUP_STAMP.touch()
+
+
+def _ensure_frontend_environment() -> None:
+    dependency_files = [FRONTEND_DIR / "package.json", FRONTEND_DIR / "yarn.lock"]
+    marker_is_stale = not FRONTEND_SETUP_STAMP.exists() or any(
+        FRONTEND_SETUP_STAMP.stat().st_mtime < dependency_file.stat().st_mtime
+        for dependency_file in dependency_files
+        if dependency_file.exists()
+    )
+
+    if marker_is_stale:
+        print("Installing frontend dependencies...")
+        if shutil.which("yarn"):
+            _run_checked(["yarn", "install"], cwd=FRONTEND_DIR)
+        else:
+            _run_checked(["npm", "install"], cwd=FRONTEND_DIR)
+        FRONTEND_SETUP_STAMP.touch()
+
 def main():
     print("Starting background services (Redis, DB)...")
-    subprocess.run(["docker", "compose", "up", "-d", "redis", "db"], check=True)
+    subprocess.run(["docker", "compose", "up", "-d", "redis", "db"], cwd=ROOT, check=True)
+
+    _ensure_backend_environment()
+    _ensure_frontend_environment()
 
     backend_port = _pick_free_port(8001)
     if backend_port != 8001:
         print(f"Port 8001 is busy; using backend port {backend_port} instead")
 
+    common_backend_env = os.environ.copy()
+    common_backend_env["CODESENTINEL_SANDBOX_NETWORK"] = "host"
+
+    frontend_env = os.environ.copy()
+    frontend_env["NEXT_PUBLIC_API_URL"] = f"http://localhost:{backend_port}"
+    frontend_env["NEXT_PUBLIC_WS_URL"] = f"ws://localhost:{backend_port}"
+
     commands = [
         {
             "name": "Celery",
-            "cmd": "cd backend && set -lx CODESENTINEL_SANDBOX_NETWORK host; test -d venv; or /usr/bin/python3.11 -m venv venv; and source /home/nithin/Documents/codesentinel/backend/venv/bin/activate.fish && celery -A workers.celery_app worker --loglevel=info --concurrency=1"
+            "cmd": [str(BACKEND_PYTHON), "-m", "celery", "-A", "workers.celery_app", "worker", "--loglevel=info", "--concurrency=1"],
+            "cwd": BACKEND_DIR,
+            "env": common_backend_env,
         },
         {
             "name": "Backend",
-            "cmd": f"cd backend && set -lx CODESENTINEL_SANDBOX_NETWORK host; test -d venv; or /usr/bin/python3.11 -m venv venv; and source /home/nithin/Documents/codesentinel/backend/venv/bin/activate.fish && uvicorn main:app --reload --port {backend_port}"
+            "cmd": [str(BACKEND_PYTHON), "-m", "uvicorn", "main:app", "--reload", "--port", str(backend_port)],
+            "cwd": BACKEND_DIR,
+            "env": common_backend_env,
         },
         {
             "name": "Frontend",
-            "cmd": f"cd frontend && NEXT_PUBLIC_API_URL=http://localhost:{backend_port} NEXT_PUBLIC_WS_URL=ws://localhost:{backend_port} yarn dev"
+            "cmd": ["yarn", "dev"] if (FRONTEND_DIR / "yarn.lock").exists() and shutil.which("yarn") else ["npm", "run", "dev"],
+            "cwd": FRONTEND_DIR,
+            "env": frontend_env,
         }
     ]
 
@@ -48,8 +114,7 @@ def main():
     
     for c in commands:
         print(f"Starting {c['name']}...")
-        # Spawning processes using fish as requested
-        p = subprocess.Popen(['fish', '-c', c['cmd']])
+        p = subprocess.Popen(c["cmd"], cwd=c["cwd"], env=c["env"])
         processes.append((c['name'], p))
 
     print("\nAll services started! Press Ctrl+C to stop.\n")
