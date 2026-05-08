@@ -5,6 +5,8 @@ import socket
 import os
 import shutil
 from pathlib import Path
+import urllib.request
+import urllib.error
 
 
 ROOT = Path(__file__).resolve().parent
@@ -38,12 +40,31 @@ def _pick_free_port(preferred: int, host: str = "127.0.0.1", max_tries: int = 20
 
 
 def _wait_for_port(port: int, host: str = "127.0.0.1", timeout: int = 60) -> None:
+    """Wait for a service to be ready on a port by attempting to connect."""
     deadline = time.time() + timeout
     while time.time() < deadline:
-        if not _is_port_free(port, host=host):
-            return
-        time.sleep(0.5)
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(1)
+                s.connect((host, port))
+                return  # Connection successful, service is ready
+        except (OSError, socket.timeout):
+            time.sleep(0.5)
     raise RuntimeError(f"Timed out waiting for {host}:{port} to become ready")
+
+
+def _wait_for_backend_ready(port: int, host: str = "127.0.0.1", timeout: int = 60) -> None:
+    """Wait for the backend API to be fully ready by checking the health endpoint."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            url = f"http://{host}:{port}/health"
+            with urllib.request.urlopen(url, timeout=2) as response:
+                if response.status == 200:
+                    return  # Backend is fully ready
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError, socket.timeout):
+            time.sleep(0.5)
+    raise RuntimeError(f"Timed out waiting for backend at {host}:{port} to be ready")
 
 
 def _run_checked(command: list[str], cwd: Path) -> None:
@@ -132,8 +153,9 @@ def main():
         p = subprocess.Popen(c["cmd"], cwd=c["cwd"], env=c["env"])
         processes.append((c['name'], p))
 
-    print(f"Waiting for backend on port {backend_port} before starting the frontend...")
-    _wait_for_port(backend_port)
+    print(f"Waiting for backend on port {backend_port} to be fully ready...")
+    _wait_for_backend_ready(backend_port)
+    print(f"Backend is ready on port {backend_port}")
 
     # Now start Frontend with correct environment variables
     frontend_command = commands[2]
