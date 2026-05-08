@@ -16,6 +16,7 @@ BACKEND_SETUP_STAMP = BACKEND_VENV / ".requirements-installed"
 
 FRONTEND_DIR = ROOT / "frontend"
 FRONTEND_SETUP_STAMP = FRONTEND_DIR / ".node_modules-installed"
+FRONTEND_BUILD_DIR = FRONTEND_DIR / ".next"
 
 
 def _is_port_free(port: int, host: str = "127.0.0.1") -> bool:
@@ -34,6 +35,15 @@ def _pick_free_port(preferred: int, host: str = "127.0.0.1", max_tries: int = 20
         if _is_port_free(candidate, host=host):
             return candidate
     raise RuntimeError(f"Could not find a free port starting at {preferred}")
+
+
+def _wait_for_port(port: int, host: str = "127.0.0.1", timeout: int = 60) -> None:
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if not _is_port_free(port, host=host):
+            return
+        time.sleep(0.5)
+    raise RuntimeError(f"Timed out waiting for {host}:{port} to become ready")
 
 
 def _run_checked(command: list[str], cwd: Path) -> None:
@@ -56,6 +66,10 @@ def _ensure_backend_environment() -> None:
 
 
 def _ensure_frontend_environment() -> None:
+    if FRONTEND_BUILD_DIR.exists():
+        print("Removing stale frontend build cache...")
+        shutil.rmtree(FRONTEND_BUILD_DIR)
+
     dependency_files = [FRONTEND_DIR / "package.json", FRONTEND_DIR / "yarn.lock"]
     marker_is_stale = not FRONTEND_SETUP_STAMP.exists() or any(
         FRONTEND_SETUP_STAMP.stat().st_mtime < dependency_file.stat().st_mtime
@@ -116,6 +130,14 @@ def main():
         print(f"Starting {c['name']}...")
         p = subprocess.Popen(c["cmd"], cwd=c["cwd"], env=c["env"])
         processes.append((c['name'], p))
+
+    print(f"Waiting for backend on port {backend_port} before starting the frontend...")
+    _wait_for_port(backend_port)
+
+    frontend_command = commands[2]
+    print(f"Starting {frontend_command['name']}...")
+    frontend_process = subprocess.Popen(frontend_command["cmd"], cwd=frontend_command["cwd"], env=frontend_command["env"])
+    processes.append((frontend_command['name'], frontend_process))
 
     print("\nAll services started! Press Ctrl+C to stop.\n")
 
