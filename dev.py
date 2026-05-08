@@ -4,6 +4,7 @@ import sys
 import socket
 import os
 import shutil
+import argparse
 from pathlib import Path
 import urllib.request
 import urllib.error
@@ -19,6 +20,16 @@ BACKEND_SETUP_STAMP = BACKEND_VENV / ".requirements-installed"
 FRONTEND_DIR = ROOT / "frontend"
 FRONTEND_SETUP_STAMP = FRONTEND_DIR / ".node_modules-installed"
 FRONTEND_BUILD_DIR = FRONTEND_DIR / ".next"
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="CodeSentinel local dev orchestrator")
+    parser.add_argument(
+        "--no-docker",
+        action="store_true",
+        help="Do not start docker-compose services (use system Redis/DB instead)",
+    )
+    return parser.parse_args()
 
 
 def _is_port_free(port: int, host: str = "127.0.0.1") -> bool:
@@ -106,9 +117,20 @@ def _ensure_frontend_environment() -> None:
             _run_checked(["npm", "install"], cwd=FRONTEND_DIR)
         FRONTEND_SETUP_STAMP.touch()
 
-def main():
-    print("Starting background services (Redis, DB)...")
+
+def _start_background_services(skip_docker: bool) -> None:
+    if skip_docker:
+        print("Skipping Docker background services (using system services)...")
+        return
+
+    print("Starting background services (Redis, DB) via Docker Compose...")
     subprocess.run(["docker", "compose", "up", "-d", "redis", "db"], cwd=ROOT, check=True)
+
+def main():
+    args = _parse_args()
+    skip_docker = args.no_docker or os.environ.get("CODESENTINEL_SKIP_DOCKER", "").lower() in {"1", "true", "yes"}
+
+    _start_background_services(skip_docker)
 
     _ensure_backend_environment()
     _ensure_frontend_environment()
