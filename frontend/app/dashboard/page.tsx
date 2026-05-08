@@ -19,9 +19,14 @@ interface ScanSummary {
 
 export default function DashboardPage() {
   const [scans, setScans] = useState<ScanSummary[]>([])
+  const [loadError, setLoadError] = useState("")
 
   useEffect(() => {
-    listScans().then(setScans)
+    listScans()
+      .then(setScans)
+      .catch(() => {
+        setLoadError("Backend is not reachable yet. Start the API and refresh this page.")
+      })
   }, [])
 
   const scoreHistory = scans
@@ -115,6 +120,12 @@ export default function DashboardPage() {
             <div className="text-xs font-mono text-on-surface/60 uppercase tracking-widest mb-2">
               Recent scans ({scans.length})
             </div>
+
+            {loadError && (
+              <div className="border border-outline-variant/20 bg-surface-container-low rounded-sm p-4 text-sm text-on-surface/70">
+                {loadError}
+              </div>
+            )}
 
             <div className="space-y-3">
               {scans.map(scan => (
