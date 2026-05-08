@@ -126,7 +126,8 @@ def main():
 
     processes = []
     
-    for c in commands:
+    # Start Celery and Backend first
+    for c in commands[:2]:
         print(f"Starting {c['name']}...")
         p = subprocess.Popen(c["cmd"], cwd=c["cwd"], env=c["env"])
         processes.append((c['name'], p))
@@ -134,6 +135,7 @@ def main():
     print(f"Waiting for backend on port {backend_port} before starting the frontend...")
     _wait_for_port(backend_port)
 
+    # Now start Frontend with correct environment variables
     frontend_command = commands[2]
     print(f"Starting {frontend_command['name']}...")
     frontend_process = subprocess.Popen(frontend_command["cmd"], cwd=frontend_command["cwd"], env=frontend_command["env"])
